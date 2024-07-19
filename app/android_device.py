@@ -1,5 +1,6 @@
 # Imports
 from ppadb.client import Client as AdbClient
+from ppadb.device import Device as AdbDevice
 
 
 # Global variables
@@ -12,6 +13,7 @@ class AndroidDevice:
     
     # The initialization method
     def __init__(self,
+                 device:AdbDevice|None,
                  device_id,
                  device_name,
                  device_host,
@@ -21,6 +23,10 @@ class AndroidDevice:
                  device_screen_height
                  ):
         
+        # Validate adb device
+        if not device:
+            raise ValueError("Missing adb device.")
+
         # Validade device id
         if not device_id:
             raise ValueError("Missing device id.")
@@ -50,6 +56,7 @@ class AndroidDevice:
             raise ValueError("Missing device status.")
 
         # Set object attributes
+        self.device = device
         self.device_id = device_id
         self.device_name = device_name
         self.device_screen_width = device_screen_width
@@ -61,28 +68,41 @@ class AndroidDevice:
 
     # The string method
     def __str__(self):
-        return f'============ DEVICE INFO ============\n'\
+        return f'======================== DEVICE INFO ========================\n'\
+            f'device:          {self.device}\n'\
             f'device_id:       {self.device_id}\n'\
             f'device_name:     {self.device_name}\n'\
             f'device_scrn_res: {self.device_screen_width} x {self.device_screen_height} pixels\n'\
             f'device_address:  {self.device_host}:{self.device_port}\n'\
             f'device_status:   {self.device_status}\n'\
-            f'====================================='
+            f'============================================================='
 
 
 # Get android device function
-def get_android_device():
+def get_android_device(device_name = 'android_device',
+                       host = DEFAULT_HOST, 
+                       port = DEFAULT_PORT):
 
     # Connect to adb server
-    print("Connecting to adb client...")
-    client = AdbClient(host="127.0.0.1", port=5037)
-    print(f"AdbClient connected (version {client.version()}).")
+    print(f'Connecting to adb client at {host}:{port}...')
+    client = AdbClient(host=host, port=port)
+    print(f"AdbClient connected (ver. {client.version()}).")
+
+    # Connect to first available device
+    print(f'Looking for available devices at {host}:{port}...')
+    available_devices = client.devices()
+    if len(available_devices) == 0:
+        raise ConnectionAbortedError(f'No available devices found at {host}:{port}.')
+    print(f'Available devices: {len(available_devices)}.')
+    device = available_devices[0]
+    print(f'Connected to first available device (id:{device.serial}).')
 
     # Return AndroidDevice object
-    return AndroidDevice(device_id=1,
-                         device_name="Poco X3 NFC",
-                         device_host=DEFAULT_HOST,
-                         device_port=DEFAULT_PORT,
+    return AndroidDevice(device=device,
+                         device_id=device.serial,
+                         device_name=device_name,
+                         device_host=host,
+                         device_port=port,
                          device_status="Connected",
                          device_screen_width=1080,
                          device_screen_height=2400)
@@ -92,7 +112,7 @@ def get_android_device():
 def main():
 
     # Connect to phone
-    phone = get_android_device()
+    phone = get_android_device(device_name='Poco X3 NFC')
     print(f'\n{phone}\n')
 
 
