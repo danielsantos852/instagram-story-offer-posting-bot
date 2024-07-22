@@ -4,6 +4,8 @@ import PIL
 from ppadb.client import Client as AdbClient
 from ppadb.device import Device as AdbDevice
 import pyautogui
+from pyscreeze import Box, center as box_center
+import random
 
 
 # Global variables
@@ -107,7 +109,7 @@ class AndroidDevice:
             return None
         print(f'Image subset found at {subset_image_box}')
 
-        # Return subset image's box
+        # Return subset image's pyscreeze.Box object
         return subset_image_box
 
 
@@ -131,14 +133,30 @@ class AndroidDevice:
 
 
     # Screen Tap
-    def screen_tap():
-        ...
+    def screen_tap(self, tap_box:Box, centered_tap:bool=False):
+
+        # If centered tap, get tap box's center coordinates
+        if centered_tap:
+            x = box_center(tap_box).x
+            y = box_center(tap_box).y
+
+        # Else, get random coordinates inside tap box
+        else:
+            x = random.randint(tap_box.left, (tap_box.left + tap_box.width))
+            y = random.randint(tap_box.top, (tap_box.top + tap_box.height))
+
+        # Input tap on device's screen
+        self.device.shell(f'input tap {x} {y}')
+        print(f'Screen tapped at (x, y) = ({x}, {y})')
+
+        # Return nothing
+        return None
 
 
     # Take Screenshot
     def take_screenshot(self, output_path:str|None = None):
         
-        # Take screenshot
+        # Take device screenshot
         print(f'Taking device screenshot ... ', end='')
         screenshot = self.device.screencap()
         print('Done.')
