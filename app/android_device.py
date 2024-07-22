@@ -78,24 +78,56 @@ class AndroidDevice:
             f'============================================================='
 
 
+    # The Push File To SD Card method
+    def push_file_to_sdcard():
+        ...
+
+
+    # The Launch Instagram method
+    def launch_instagram_app(self, force_restart:bool = False):
+        ...
+
+
+    # The Take Screenshot method
+    def take_screenshot(self, output_path = './temp/device_screenshot.png'):
+        
+        # Take screenshot
+        print(f'Taking device screenshot.')
+        screenshot = self.device.screencap()
+
+        # Save screenshot to output path
+        with open(output_path, 'wb') as file:
+            file.write(screenshot)
+            f'Screenshot saved at {output_path}.'
+
+        # Return path to output file
+        return output_path
+
+    
+    # The Delete File In SD Card method
+    def delete_file_in_sdcard():
+        ...
+
+
 # Get android device function
 def get_android_device(device_name = 'android_device',
                        host = DEFAULT_HOST, 
                        port = DEFAULT_PORT):
 
     # Connect to adb server
-    print(f'Connecting to adb client at {host}:{port}...')
+    print(f'Connecting to adb client at {host}:{port}.')
     client = AdbClient(host=host, port=port)
     print(f"AdbClient connected (ver. {client.version()}).")
 
     # Connect to first available device
-    print(f'Looking for available devices at {host}:{port}...')
+    print(f'Looking for available devices at {host}:{port}.')
     available_devices = client.devices()
     if len(available_devices) == 0:
         raise ConnectionAbortedError(f'No available devices found at {host}:{port}.')
     print(f'Available devices: {len(available_devices)}.')
     device = available_devices[0]
     print(f'Connected to first available device (id:{device.serial}).')
+    device_status = "Connected"
 
     # Return AndroidDevice object
     return AndroidDevice(device=device,
@@ -103,7 +135,7 @@ def get_android_device(device_name = 'android_device',
                          device_name=device_name,
                          device_host=host,
                          device_port=port,
-                         device_status="Connected",
+                         device_status=device_status,
                          device_screen_width=1080,
                          device_screen_height=2400)
 
@@ -114,6 +146,10 @@ def main():
     # Connect to phone
     phone = get_android_device(device_name='Poco X3 NFC')
     print(f'\n{phone}\n')
+
+
+    # Take screenshot
+    print(phone.take_screenshot())
 
 
 # Call main function
