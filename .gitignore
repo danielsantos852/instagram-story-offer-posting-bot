@@ -1,0 +1,11 @@
+# Ignore virtual environment folder(s)
+/.venv/
+
+# Ignore any "__pycache__" folders
+**/__pycache__/
+
+# Ignore contents of "logs" folder
+#/logs/*
+
+# Ignore contents of "temp" folder
+/temp/*
