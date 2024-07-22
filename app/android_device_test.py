@@ -7,24 +7,16 @@ import time
 # The Main function
 def main():
 
-    test_screen_tap()
+    test_get_android_device()
 
 
-# Test Screen Tap
-def test_screen_tap():
+# Get Android Device Test
+def test_get_android_device():
 
     # Get AndroidDevice object
     phone = get_android_device()
-
-    # Launch Instagram app and wait a bit
-    phone.launch_instagram_app(force_restart=True)
-    time.sleep(4)
-
-    # Find "Add Story" button on screen
-    add_story_button = phone.find_on_screen(image_subset='./resources/00a_btn_newstory.png')
-
-    # Tap on button box
-    phone.screen_tap(tap_box=add_story_button)
+    print(f'\n{phone}\n')
+    return True
 
 
 # Test Find On Screen
@@ -40,6 +32,23 @@ def test_find_on_screen():
 
     print(box)
     print(type(box))
+
+
+# Test Screen Tap
+def test_input_screen_tap():
+
+    # Get AndroidDevice object
+    phone = get_android_device()
+
+    # Launch Instagram app and wait a bit
+    phone.launch_instagram_app(force_restart=True)
+    time.sleep(4)
+
+    # Find "Add Story" button on screen
+    add_story_button = phone.find_on_screen(image_subset='./resources/00a_btn_newstory.png')
+
+    # Tap on button box
+    phone.input_screen_tap(tap_box=add_story_button)
 
 
 # Test pyautogui.locate()
