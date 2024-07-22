@@ -83,12 +83,12 @@ class AndroidDevice:
             f'============================================================='
 
 
-    # Delete File In SD Card
-    def delete_file_in_sdcard():
+    # Remove a file from SD card
+    def delete_file_from_sdcard():
         ...
 
 
-    # Find On Screen
+    # Find (image) on screen
     def find_on_screen(self, image_subset, image_set=None, confidence_lvl=0.9):
 
         # If no image set specified:
@@ -113,27 +113,13 @@ class AndroidDevice:
         return subset_image_box
 
 
-    # Launch Instagram App
-    def launch_instagram_app(self, force_restart:bool = False):
-
-        # Force-stop Instagram app if force_restart required
-        if force_restart==True:
-            self.device.shell('am force-stop com.instagram.android')
-
-        # (Re-)Start Instagram app
-        self.device.shell('monkey -p com.instagram.android 1')
-
-        # Return nothing
-        return None
-
-
-    # Push File To SD Card
-    def push_file_to_sdcard():
+    # Input screen drag-and-drop
+    def input_screen_drag_and_drop(self):
         ...
 
 
-    # Screen Tap
-    def screen_tap(self, tap_box:Box, centered_tap:bool=False):
+    # Input screen tap
+    def input_screen_tap(self, tap_box:Box, centered_tap:bool=False):
 
         # If centered tap, get tap box's center coordinates
         if centered_tap:
@@ -151,6 +137,25 @@ class AndroidDevice:
 
         # Return nothing
         return None
+
+
+    # Launch Instagram App
+    def launch_instagram_app(self, force_restart:bool = False):
+
+        # Force-stop Instagram app if force_restart required
+        if force_restart==True:
+            self.device.shell('am force-stop com.instagram.android')
+
+        # (Re-)Start Instagram app
+        self.device.shell('monkey -p com.instagram.android 1')
+
+        # Return nothing
+        return None
+
+
+    # Push a file to SD card
+    def push_file_to_sdcard():
+        ...
 
 
     # Take Screenshot
@@ -174,24 +179,35 @@ class AndroidDevice:
 
 
 # Get Android Device
-def get_android_device(device_name = 'android_device',
+def get_android_device(device_name = 'Generic Android Device',
                        host = DEFAULT_ADB_HOST, 
                        port = DEFAULT_ADB_PORT):
 
     # Connect to adb server
-    print(f'Connecting to adb client at {host}:{port}.')
+    print(f'Connecting to adb client at {host}:{port} ... ', end='')
     client = AdbClient(host=host, port=port)
-    print(f"AdbClient connected (ver. {client.version()}).")
+    print(f"Connected (ver. {client.version()}).")
 
-    # Connect to first available device
-    print(f'Looking for available devices at {host}:{port}.')
+    # Look for available devices
+    print(f'Looking for available devices ... ', end='')
     available_devices = client.devices()
     if len(available_devices) == 0:
         raise ConnectionAbortedError(f'No available devices found at {host}:{port}.')
-    print(f'Available devices: {len(available_devices)}.')
+    print(f'Found {len(available_devices)}.')
+    
+    # Connect to first available device
+    print(f'Connecting to first available device ... ', end='')
     device = available_devices[0]
-    print(f'Connected to first available device (id:{device.serial}).')
+    print(f'Connected (device_id: {device.serial}).')
     device_status = "Connected"
+
+    # Get device's screen width and height
+    screen_size = device.shell('wm size') # e.g.: 'Physical size: [width]x[height]'
+    screen_size = screen_size.replace('Physical size: ', '') # e.g.: '[width]x[height]'
+    screen_width, screen_height = screen_size.split(sep='x') # e.g.: ('[width]', '[height]')
+    screen_width = int(screen_width)
+    screen_height = int(screen_height)
+
 
     # Return AndroidDevice object
     return AndroidDevice(device=device,
@@ -200,5 +216,5 @@ def get_android_device(device_name = 'android_device',
                          device_host=host,
                          device_port=port,
                          device_status=device_status,
-                         device_screen_width=1080,
-                         device_screen_height=2400)
+                         device_screen_width=screen_width,
+                         device_screen_height=screen_height)
