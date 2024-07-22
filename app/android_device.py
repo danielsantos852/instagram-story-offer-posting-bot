@@ -83,9 +83,18 @@ class AndroidDevice:
         ...
 
 
-    # The Launch Instagram method
+    # The Launch Instagram App method
     def launch_instagram_app(self, force_restart:bool = False):
-        ...
+
+        # Force-stop Instagram app if force_restart required
+        if force_restart==True:
+            self.device.shell('am force-stop com.instagram.android')
+
+        # (Re-)Start Instagram app
+        self.device.shell('monkey -p com.instagram.android 1')
+
+        # Return nothing
+        return None
 
 
     # The Take Screenshot method
@@ -103,7 +112,7 @@ class AndroidDevice:
         # Return path to output file
         return output_path
 
-    
+
     # The Delete File In SD Card method
     def delete_file_in_sdcard():
         ...
@@ -138,20 +147,3 @@ def get_android_device(device_name = 'android_device',
                          device_status=device_status,
                          device_screen_width=1080,
                          device_screen_height=2400)
-
-
-# Main function
-def main():
-
-    # Connect to phone
-    phone = get_android_device(device_name='Poco X3 NFC')
-    print(f'\n{phone}\n')
-
-
-    # Take screenshot
-    print(phone.take_screenshot())
-
-
-# Call main function
-if __name__=="__main__":
-    main()
