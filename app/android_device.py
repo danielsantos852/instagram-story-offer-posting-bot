@@ -1,17 +1,20 @@
 # Imports
+from io import BytesIO
+import PIL
 from ppadb.client import Client as AdbClient
 from ppadb.device import Device as AdbDevice
+import pyautogui
 
 
 # Global variables
-DEFAULT_HOST = "127.0.0.1"
-DEFAULT_PORT = 5037
+DEFAULT_ADB_HOST = "127.0.0.1"
+DEFAULT_ADB_PORT = 5037
 
 
 # The Android Device class
 class AndroidDevice:
     
-    # The initialization method
+    # __init__ method
     def __init__(self,
                  device:AdbDevice|None,
                  device_id,
@@ -66,7 +69,7 @@ class AndroidDevice:
         self.device_status = device_status
 
 
-    # The string method
+    # __str__ method
     def __str__(self):
         return f'======================== DEVICE INFO ========================\n'\
             f'device:          {self.device}\n'\
@@ -78,12 +81,37 @@ class AndroidDevice:
             f'============================================================='
 
 
-    # The Push File To SD Card method
-    def push_file_to_sdcard():
+    # Delete File In SD Card
+    def delete_file_in_sdcard():
         ...
 
 
-    # The Launch Instagram App method
+    # Find On Screen
+    def find_on_screen(self, image_subset, image_set=None, confidence_lvl=0.9):
+
+        # If no image set specified:
+        if not image_set:
+
+            # Use device screenshot as image set
+            image_set = PIL.Image.open(fp=BytesIO(self.take_screenshot()),
+                                       mode='r')
+
+        # Locate image subset in image set
+        try:
+            pyautogui.useImageNotFoundException()
+            subset_image_box = pyautogui.locate(needleImage=image_subset,
+                                                haystackImage=image_set,
+                                                confidence=confidence_lvl)
+        except pyautogui.ImageNotFoundException:
+            print('Subset image not found.')
+            return None
+        print(f'Image subset found at {subset_image_box}')
+
+        # Return subset image's box
+        return subset_image_box
+
+
+    # Launch Instagram App
     def launch_instagram_app(self, force_restart:bool = False):
 
         # Force-stop Instagram app if force_restart required
@@ -97,31 +125,40 @@ class AndroidDevice:
         return None
 
 
-    # The Take Screenshot method
-    def take_screenshot(self, output_path = './temp/device_screenshot.png'):
-        
-        # Take screenshot
-        print(f'Taking device screenshot.')
-        screenshot = self.device.screencap()
-
-        # Save screenshot to output path
-        with open(output_path, 'wb') as file:
-            file.write(screenshot)
-            f'Screenshot saved at {output_path}.'
-
-        # Return path to output file
-        return output_path
-
-
-    # The Delete File In SD Card method
-    def delete_file_in_sdcard():
+    # Push File To SD Card
+    def push_file_to_sdcard():
         ...
 
 
-# Get android device function
+    # Screen Tap
+    def screen_tap():
+        ...
+
+
+    # Take Screenshot
+    def take_screenshot(self, output_path:str|None = None):
+        
+        # Take screenshot
+        print(f'Taking device screenshot ... ', end='')
+        screenshot = self.device.screencap()
+        print('Done.')
+
+        # If specified output path
+        if output_path:
+
+            # Save screenshot to output path
+            with open(output_path, 'wb') as file:
+                file.write(screenshot)
+            print(f'Screenshot saved at {output_path}.')
+
+        # Return screenshot as bytearray
+        return screenshot
+
+
+# Get Android Device
 def get_android_device(device_name = 'android_device',
-                       host = DEFAULT_HOST, 
-                       port = DEFAULT_PORT):
+                       host = DEFAULT_ADB_HOST, 
+                       port = DEFAULT_ADB_PORT):
 
     # Connect to adb server
     print(f'Connecting to adb client at {host}:{port}.')
