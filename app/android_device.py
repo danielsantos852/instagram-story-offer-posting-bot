@@ -6,11 +6,13 @@ from ppadb.device import Device as AdbDevice
 import pyautogui
 from pyscreeze import Box, center as box_center
 import random
+import time
 
 
 # Global variables
 DEFAULT_ADB_HOST = "127.0.0.1"
 DEFAULT_ADB_PORT = 5037
+BTN_ADDTOSTORY = './resources/00a_btn_addtostory.png'
 
 
 # The Android Device class
@@ -88,29 +90,50 @@ class AndroidDevice:
         ...
 
 
-    # Find (image) on screen
-    def find_on_screen(self, image_subset, image_set=None, confidence_lvl=0.9):
+    # Find (image subset) on screen
+    def find_on_screen(self, 
+                       subset_image:str, 
+                       subset_image_name:str = 'subset_image', 
+                       confidence_lvl:float = 0.9, 
+                       max_attempts:int = 1, 
+                       time_between_attempts:int = 3
+                       ) -> Box|None:
 
-        # If no image set specified:
-        if not image_set:
+        # Start attempts to find image subset in image set
+        pyautogui.useImageNotFoundException(False)
+        subset_image_box = None
+        attempt_counter = 0
+        while True:
 
-            # Use device screenshot as image set
-            image_set = PIL.Image.open(fp=BytesIO(self.take_screenshot()),
+            # Use device screenshot as set image
+            set_image = PIL.Image.open(fp=BytesIO(self.take_screenshot()),
                                        mode='r')
 
-        # Locate image subset in image set
-        try:
-            pyautogui.useImageNotFoundException()
-            subset_image_box = pyautogui.locate(needleImage=image_subset,
-                                                haystackImage=image_set,
+            # Attempt to locate subset image in set image
+            attempt_counter += 1
+            print(f'Attempting to locate {subset_image_name} (attempt #{attempt_counter}) ... ', end='')
+            subset_image_box = pyautogui.locate(needleImage=subset_image,
+                                                haystackImage=set_image,
                                                 confidence=confidence_lvl)
-        except pyautogui.ImageNotFoundException:
-            print('Subset image not found.')
-            return None
-        print(f'Subset image found at {subset_image_box}')
 
-        # Return subset image's pyscreeze.Box object
-        return subset_image_box
+            # If subset image not found:
+            if not subset_image_box:
+
+                # If more attempts left, wait some time and move to next attempt
+                if attempt_counter < max_attempts:
+                    print(f'Not found (next attempt in {time_between_attempts} seconds).')
+                    time.sleep(time_between_attempts)
+                    continue
+
+                # Else (no attempts left), stop attempting, return nothing
+                else:
+                    print(f'Not found (no attempts left).')
+                    return None
+
+            # Else (subset image found), return subset image box
+            else:
+                print(f'Found at {subset_image_box}. ')
+                return subset_image_box
 
 
     # Input screen drag-and-drop
@@ -153,7 +176,7 @@ class AndroidDevice:
 
 
     # Launch Instagram App
-    def launch_instagram_app(self, force_restart:bool = False):
+    def launch_instagram_app(self, force_restart:bool = True):
 
         # Force-stop Instagram app if force_restart required
         if force_restart==True:
@@ -168,7 +191,23 @@ class AndroidDevice:
 
     # Post Instagram Story
     def post_instagram_story(self):
-        ...
+        
+        # Push post image to device's sd card
+        self.push_file_to_sdcard()
+
+        # Launch Instagram (and wait a bit)
+        self.launch_instagram_app(force_restart=True)
+        time.sleep(3)
+
+        # Navigate to "Add to story" and select post image
+
+        # Add link sticker
+
+        # Position link sticker
+
+        # Post story
+
+        # Delete post image from device's sd card
 
 
     # Push a file to SD card
