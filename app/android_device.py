@@ -18,7 +18,7 @@ class AndroidDevice:
     
     # __init__ method
     def __init__(self,
-                 device:AdbDevice|None,
+                 device_adb:AdbDevice|None,
                  device_id,
                  device_name,
                  device_host,
@@ -28,9 +28,9 @@ class AndroidDevice:
                  device_screen_height
                  ):
         
-        # Validate adb device
-        if not device:
-            raise ValueError("Missing adb device.")
+        # Validate device adb object
+        if not device_adb:
+            raise ValueError("Missing adb device object.")
 
         # Validade device id
         if not device_id:
@@ -61,7 +61,7 @@ class AndroidDevice:
             raise ValueError("Missing device status.")
 
         # Set object attributes
-        self.device = device
+        self.device_adb = device_adb
         self.device_id = device_id
         self.device_name = device_name
         self.device_screen_width = device_screen_width
@@ -74,7 +74,7 @@ class AndroidDevice:
     # __str__ method
     def __str__(self):
         return f'======================== DEVICE INFO ========================\n'\
-            f'device:          {self.device}\n'\
+            f'device_adb:      {self.device_adb}\n'\
             f'device_id:       {self.device_id}\n'\
             f'device_name:     {self.device_name}\n'\
             f'device_scrn_res: {self.device_screen_width} x {self.device_screen_height} pixels\n'\
@@ -107,15 +107,28 @@ class AndroidDevice:
         except pyautogui.ImageNotFoundException:
             print('Subset image not found.')
             return None
-        print(f'Image subset found at {subset_image_box}')
+        print(f'Subset image found at {subset_image_box}')
 
         # Return subset image's pyscreeze.Box object
         return subset_image_box
 
 
     # Input screen drag-and-drop
-    def input_screen_drag_and_drop(self):
-        ...
+    def input_screen_drag_and_drop(self, drag_box, dx, dy, duration, centered_drag:bool=False):
+
+        # If centered drag, get drag box's center coordinates
+        if centered_drag:
+            x_0 = box_center(drag_box).x
+            y_0 = box_center(drag_box).y
+
+        # Else, get random coordinates inside drag box
+        else:
+            x_0 = random.randint(drag_box.left, (drag_box.left + drag_box.width))
+            y_0 = random.randint(drag_box.top, (drag_box.top + drag_box.height))
+
+        # Input drag and drop on device's screen
+        self.device_adb.shell(f'input draganddrop {x_0} {y_0} {x_0+dx} {y_0+dy} {duration}')
+        print(f'Drag-and-drop from (x,y)=({x_0}, {y_0}) to (x,y)=({x_0+dx}, {y_0+dy}).')
 
 
     # Input screen tap
@@ -132,7 +145,7 @@ class AndroidDevice:
             y = random.randint(tap_box.top, (tap_box.top + tap_box.height))
 
         # Input tap on device's screen
-        self.device.shell(f'input tap {x} {y}')
+        self.device_adb.shell(f'input tap {x} {y}')
         print(f'Screen tapped at (x, y) = ({x}, {y})')
 
         # Return nothing
@@ -144,10 +157,10 @@ class AndroidDevice:
 
         # Force-stop Instagram app if force_restart required
         if force_restart==True:
-            self.device.shell('am force-stop com.instagram.android')
+            self.device_adb.shell('am force-stop com.instagram.android')
 
         # (Re-)Start Instagram app
-        self.device.shell('monkey -p com.instagram.android 1')
+        self.device_adb.shell('monkey -p com.instagram.android 1')
 
         # Return nothing
         return None
@@ -163,7 +176,7 @@ class AndroidDevice:
         
         # Take device screenshot
         print(f'Taking device screenshot ... ', end='')
-        screenshot = self.device.screencap()
+        screenshot = self.device_adb.screencap()
         print('Done.')
 
         # If specified output path
@@ -195,23 +208,23 @@ def get_android_device(device_name = 'Generic Android Device',
         raise ConnectionAbortedError(f'No available devices found at {host}:{port}.')
     print(f'Found {len(available_devices)}.')
     
-    # Connect to first available device
+    # Connect to first available device and get its id/serial
     print(f'Connecting to first available device ... ', end='')
-    device = available_devices[0]
-    print(f'Connected (device_id: {device.serial}).')
+    device_adb = available_devices[0]
+    device_id = device_adb.serial
     device_status = "Connected"
+    print(f'{device_status} (device_id: {device_id}).')
 
     # Get device's screen width and height
-    screen_size = device.shell('wm size') # e.g.: 'Physical size: [width]x[height]'
+    screen_size = device_adb.shell('wm size') # e.g.: 'Physical size: [width]x[height]'
     screen_size = screen_size.replace('Physical size: ', '') # e.g.: '[width]x[height]'
     screen_width, screen_height = screen_size.split(sep='x') # e.g.: ('[width]', '[height]')
     screen_width = int(screen_width)
     screen_height = int(screen_height)
 
-
     # Return AndroidDevice object
-    return AndroidDevice(device=device,
-                         device_id=device.serial,
+    return AndroidDevice(device_adb=device_adb,
+                         device_id=device_id,
                          device_name=device_name,
                          device_host=host,
                          device_port=port,
