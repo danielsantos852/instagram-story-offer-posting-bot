@@ -7,7 +7,7 @@ import time
 # The Main function
 def main():
 
-    test_find_on_screen()
+    test_post_instagram_story()
 
 
 # Get Android Device Test
@@ -68,6 +68,26 @@ def test_input_screen_tap():
 
     # Tap on button box
     phone.input_screen_tap(tap_box=add_story_button)
+
+
+# Post Instagram Story test
+def test_post_instagram_story():
+    
+    # Get AndroidDevice object
+    phone = get_android_device()
+
+    # Post Instagram story
+    phone.post_instagram_story()
+
+
+# Take Screenshot test
+def test_take_screenshot():
+
+    # Get AndroidDevice object
+    phone = get_android_device()
+
+    # Take device screenshot
+    phone.take_screenshot(output_path='./temp/screencap.png')
 
 
 # Call main function
