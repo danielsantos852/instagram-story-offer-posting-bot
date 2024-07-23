@@ -10,7 +10,7 @@ import time
 
 
 # Global variables
-DEFAULT_ADB_HOST = "127.0.0.1"
+DEFAULT_ADB_HOST = '127.0.0.1'
 DEFAULT_ADB_PORT = 5037
 BTN_ADDTOSTORY = './resources/00a_btn_addtostory.png'
 
@@ -21,14 +21,14 @@ class AndroidDevice:
     # __init__ method
     def __init__(self,
                  device_adb:AdbDevice|None,
-                 device_id,
-                 device_name,
-                 device_host,
-                 device_port,
-                 device_status,
-                 device_screen_width,
-                 device_screen_height
-                 ):
+                 device_id:str,
+                 device_name:str,
+                 device_host:str,
+                 device_port:int,
+                 device_status:str,
+                 device_screen_width:int,
+                 device_screen_height:int
+                 ) -> None:
         
         # Validate device adb object
         if not device_adb:
@@ -72,9 +72,12 @@ class AndroidDevice:
         self.device_port = device_port
         self.device_status = device_status
 
+        # Return nothing
+        return None
+
 
     # __str__ method
-    def __str__(self):
+    def __str__(self) -> str:
         return f'======================== DEVICE INFO ========================\n'\
             f'device_adb:      {self.device_adb}\n'\
             f'device_id:       {self.device_id}\n'\
@@ -85,12 +88,14 @@ class AndroidDevice:
             f'============================================================='
 
 
-    # Remove a file from SD card
-    def delete_file_from_sdcard():
-        ...
+    # Delete File From SD Card method
+    def delete_file_from_sdcard(self) -> None:
+        
+        # Return nothing
+        return None
 
 
-    # Find (image subset) on screen
+    # Find On Screen method
     def find_on_screen(self, 
                        subset_image:str, 
                        subset_image_name:str = 'subset_image', 
@@ -136,8 +141,15 @@ class AndroidDevice:
                 return subset_image_box
 
 
-    # Input screen drag-and-drop
-    def input_screen_drag_and_drop(self, drag_box, dx, dy, duration, centered_drag:bool=False):
+    # Input Screen Drag-And-Drop method
+    def input_screen_drag_and_drop(self, 
+                                   drag_box:Box, 
+                                   dx:int, 
+                                   dy:int, 
+                                   duration:int, 
+                                   centered_drag:bool=False,
+                                   wait_time:int = 1
+                                   ) -> None:
 
         # If centered drag, get drag box's center coordinates
         if centered_drag:
@@ -153,9 +165,19 @@ class AndroidDevice:
         self.device_adb.shell(f'input draganddrop {x_0} {y_0} {x_0+dx} {y_0+dy} {duration}')
         print(f'Drag-and-drop from (x,y)=({x_0}, {y_0}) to (x,y)=({x_0+dx}, {y_0+dy}).')
 
+        # Wait some time (for convenience)
+        time.sleep(wait_time)
 
-    # Input screen tap
-    def input_screen_tap(self, tap_box:Box, centered_tap:bool=False):
+        # Return nothing
+        return None
+
+
+    # Input Screen Tap method
+    def input_screen_tap(self, 
+                         tap_box:Box, 
+                         centered_tap:bool = False,
+                         wait_time:int = 1
+                         ) -> None:
 
         # If centered tap, get tap box's center coordinates
         if centered_tap:
@@ -171,33 +193,41 @@ class AndroidDevice:
         self.device_adb.shell(f'input tap {x} {y}')
         print(f'Screen tapped at (x, y) = ({x}, {y})')
 
+        # Wait some time (for convenience)
+        time.sleep(wait_time)
+
         # Return nothing
         return None
 
 
-    # Launch Instagram App
-    def launch_instagram_app(self, force_restart:bool = True):
+    # Launch Instagram App method
+    def launch_instagram_app(self, 
+                             force_restart:bool = True, 
+                             wait_time:int = 1
+                             ) -> None:
 
-        # Force-stop Instagram app if force_restart required
+        # Force-stop Instagram app if force restart required
         if force_restart==True:
             self.device_adb.shell('am force-stop com.instagram.android')
 
         # (Re-)Start Instagram app
         self.device_adb.shell('monkey -p com.instagram.android 1')
 
+        # Wait some time (for convenience)
+        time.sleep(wait_time)
+
         # Return nothing
         return None
 
 
-    # Post Instagram Story
+    # Post Instagram Story method
     def post_instagram_story(self):
         
         # Push post image to device's sd card
         self.push_file_to_sdcard()
 
-        # Launch Instagram (and wait a bit)
+        # Launch Instagram app
         self.launch_instagram_app(force_restart=True)
-        time.sleep(3)
 
         # Navigate to "Add to story" and select post image
 
@@ -210,23 +240,23 @@ class AndroidDevice:
         # Delete post image from device's sd card
 
 
-    # Push a file to SD card
-    def push_file_to_sdcard():
-        ...
+    # Push File To SD Card method
+    def push_file_to_sdcard(self) -> None:
+        
+        # Return nothing
+        return None
 
 
-    # Take Screenshot
-    def take_screenshot(self, output_path:str|None = None):
+    # Take Screenshot method
+    def take_screenshot(self, output_path:str|None = None) -> bytearray:
         
         # Take device screenshot
         print(f'Taking device screenshot ... ', end='')
         screenshot = self.device_adb.screencap()
         print('Done.')
 
-        # If specified output path
+        # If specified output path, save screenshot to it
         if output_path:
-
-            # Save screenshot to output path
             with open(output_path, 'wb') as file:
                 file.write(screenshot)
             print(f'Screenshot saved at {output_path}.')
@@ -235,10 +265,11 @@ class AndroidDevice:
         return screenshot
 
 
-# Get Android Device
-def get_android_device(device_name = 'Generic Android Device',
-                       host = DEFAULT_ADB_HOST, 
-                       port = DEFAULT_ADB_PORT):
+# Get Android Device function
+def get_android_device(device_name:str = 'Generic Android Device',
+                       host:str = DEFAULT_ADB_HOST, 
+                       port:int = DEFAULT_ADB_PORT
+                       ) -> AndroidDevice:
 
     # Connect to adb server
     print(f'Connecting to adb client at {host}:{port} ... ', end='')
