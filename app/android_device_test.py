@@ -7,7 +7,7 @@ import time
 # The Main function
 def main():
 
-    test_get_android_device()
+    test_input_screen_drag_and_drop()
 
 
 # Get Android Device Test
@@ -19,7 +19,7 @@ def test_get_android_device():
     return True
 
 
-# Test Find On Screen
+# Find On Screen test
 def test_find_on_screen():
 
     # Get AndroidDevice object
@@ -34,7 +34,24 @@ def test_find_on_screen():
     print(type(box))
 
 
-# Test Screen Tap
+# Screen Drag-And-Drop test
+def test_input_screen_drag_and_drop():
+    
+    # Get an Android device
+    phone = get_android_device(device_name='Poco X3 NFC')
+
+    # Find link sticker icon on device screen
+    sticker_box = phone.find_on_screen(image_subset='./resources/08a_ico_linksticker_blue.png')
+
+    # Drag sticker down
+    phone.input_screen_drag_and_drop(drag_box=sticker_box,
+                                     dx=0,
+                                     dy=920,
+                                     duration=2000,
+                                     centered_drag=False)
+
+
+# Screen Tap test
 def test_input_screen_tap():
 
     # Get AndroidDevice object
@@ -49,15 +66,6 @@ def test_input_screen_tap():
 
     # Tap on button box
     phone.input_screen_tap(tap_box=add_story_button)
-
-
-# Test pyautogui.locate()
-def test_pyautogui_locate():
-    from pyautogui import locate
-    box = locate(needleImage='./resources/00a_btn_newstory.png',
-                 haystackImage='./resources/00_ss.png',
-                 confidence=0.9)
-    print(f'Image subset found at {box}')
 
 
 # Call main function
