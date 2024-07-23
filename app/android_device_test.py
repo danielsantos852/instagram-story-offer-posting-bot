@@ -7,7 +7,7 @@ import time
 # The Main function
 def main():
 
-    test_input_screen_drag_and_drop()
+    test_find_on_screen()
 
 
 # Get Android Device Test
@@ -23,15 +23,17 @@ def test_get_android_device():
 def test_find_on_screen():
 
     # Get AndroidDevice object
-    phone = get_android_device()
+    phone = get_android_device(device_name='Poco X3 NFC')
 
-    # Find some image
-    box = phone.find_on_screen(image_subset='./resources/00a_btn_newstory.png',
-                               image_set=None,
-                               confidence_lvl=0.9)
+    # Launch Instagram app
+    phone.launch_instagram_app(force_restart=True)
 
-    print(box)
-    print(type(box))
+    # Find "Add to story" button on screen
+    box = phone.find_on_screen(subset_image='./resources/00a_btn_addtostory.png',
+                               subset_image_name='"Add to story" button',
+                               confidence_lvl=0.9,
+                               max_attempts=5,
+                               time_between_attempts=3)
 
 
 # Screen Drag-And-Drop test
