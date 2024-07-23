@@ -166,6 +166,11 @@ class AndroidDevice:
         return None
 
 
+    # Post Instagram Story
+    def post_instagram_story(self):
+        ...
+
+
     # Push a file to SD card
     def push_file_to_sdcard():
         ...
