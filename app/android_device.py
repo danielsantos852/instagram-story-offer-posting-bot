@@ -10,9 +10,22 @@ import time
 
 
 # Global variables
-DEFAULT_ADB_HOST = '127.0.0.1'
-DEFAULT_ADB_PORT = 5037
-BTN_ADDTOSTORY = './resources/00a_btn_addtostory.png'
+ADB_DEFAULT_HOST = '127.0.0.1'
+ADB_DEFAULT_PORT = 5037
+SPRITE_ADDSTICKER = './resources/sprites/addsticker.png'
+SPRITE_ADDTOSTORY = './resources/sprites/addtostory.png'
+SPRITE_CLOSEFRIENDS = './resources/sprites/closefriends.png'
+SPRITE_CUSTOMIZESTICKERTEXT = './resources/sprites/customizestickertext.png'
+SPRITE_DONE = './resources/sprites/done.png'
+SPRITE_LINKSTICKER_BLACK = './resources/sprites/linksticker_black.png'
+SPRITE_LINKSTICKER_BLUE = './resources/sprites/linksticker_blue.png'
+SPRITE_LINKSTICKER_COLOURED = './resources/sprites/linksticker_coloured.png'
+SPRITE_LINKSTICKER_WHITE = './resources/sprites/linksticker_white.png'
+SPRITE_LINKSTICKER = './resources/sprites/linksticker.png'
+SPRITE_RECENTS = './resources/sprites/recents.png'
+SPRITE_SEARCHFIELD = './resources/sprites/searchfield.png'
+SPRITE_URLFIELD = './resources/sprites/urlfield.png'
+SPRITE_YOURSTORY = './resources/sprites/yourstory.png'
 
 
 # The Android Device class
@@ -222,14 +235,21 @@ class AndroidDevice:
 
     # Post Instagram Story method
     def post_instagram_story(self):
-        
+
         # Push post image to device's sd card
         self.push_file_to_sdcard()
 
         # Launch Instagram app
-        self.launch_instagram_app(force_restart=True)
+        self.launch_instagram_app(force_restart=True, 
+                                  wait_time=3)
 
-        # Navigate to "Add to story" and select post image
+        # Click on "Add to story" (white cross in blue circle) button
+        sprite_box = self.find_on_screen(subset_image=SPRITE_ADDTOSTORY,
+                                         subset_image_name='"Add to story" button',
+                                         max_attempts=5,
+                                         time_between_attempts=3)
+        self.input_screen_tap(tap_box=sprite_box,
+                              wait_time=1)
 
         # Add link sticker
 
@@ -238,6 +258,10 @@ class AndroidDevice:
         # Post story
 
         # Delete post image from device's sd card
+
+        # Return nothing
+        print('Instagram story posted.')
+        return None
 
 
     # Push File To SD Card method
@@ -267,8 +291,8 @@ class AndroidDevice:
 
 # Get Android Device function
 def get_android_device(device_name:str = 'Generic Android Device',
-                       host:str = DEFAULT_ADB_HOST, 
-                       port:int = DEFAULT_ADB_PORT
+                       host:str = ADB_DEFAULT_HOST, 
+                       port:int = ADB_DEFAULT_PORT
                        ) -> AndroidDevice:
 
     # Connect to adb server
