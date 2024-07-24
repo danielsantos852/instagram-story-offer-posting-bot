@@ -1,39 +1,40 @@
 # Imports
-from android_device import get_android_device
-import pyscreeze
-import time
+from android_device import AndroidDevice, get_android_device
 
 
 # The Main function
 def main():
 
-    test_post_instagram_story()
+    # Get AndroidDevice object
+    phone = test_get_android_device()
+
+    # Push a file to device sd card
+    test_push_image_to_sdcard(phone)
 
 
 # Get Android Device Test
-def test_get_android_device():
+def test_get_android_device(device_name:str = 'test_android_device') -> AndroidDevice:
 
     # Get AndroidDevice object
-    phone = get_android_device()
-    print(f'\n{phone}\n')
-    return True
+    phone = get_android_device(device_name=device_name)
+    print(f'{phone}')
+
+    # Return AndroidDevice object
+    return phone
 
 
 # Find On Screen test
-def test_find_on_screen():
-
-    # Get AndroidDevice object
-    phone = get_android_device(device_name='Poco X3 NFC')
+def test_find_on_screen(device:AndroidDevice):
 
     # Launch Instagram app
-    phone.launch_instagram_app(force_restart=True)
+    device.launch_instagram_app(force_restart=True)
 
     # Find "Add to story" button on screen
-    box = phone.find_on_screen(subset_image='./resources/00a_btn_addtostory.png',
-                               subset_image_name='"Add to story" button',
-                               confidence_lvl=0.9,
-                               max_attempts=5,
-                               time_between_attempts=3)
+    box = device.find_on_screen(subset_image='./resources/00a_btn_addtostory.png',
+                                subset_image_name='"Add to story" button',
+                                confidence_lvl=0.9,
+                                max_attempts=5,
+                                time_between_attempts=3)
 
 
 # Screen Drag-And-Drop test
@@ -61,7 +62,6 @@ def test_input_screen_tap():
 
     # Launch Instagram app and wait a bit
     phone.launch_instagram_app(force_restart=True)
-    time.sleep(4)
 
     # Find "Add Story" button on screen
     add_story_button = phone.find_on_screen(image_subset='./resources/00a_btn_newstory.png')
@@ -71,23 +71,24 @@ def test_input_screen_tap():
 
 
 # Post Instagram Story test
-def test_post_instagram_story():
-    
-    # Get AndroidDevice object
-    phone = get_android_device()
+def test_post_instagram_story(device:AndroidDevice):
 
     # Post Instagram story
-    phone.post_instagram_story()
+    device.post_instagram_story()
+
+
+# Push File To SD Card test
+def test_push_image_to_sdcard(device:AndroidDevice):
+    
+    device.push_image_to_sdcard(src_file_path='./resources/templates/story_image_720x1280_blank.png',
+                                dest_file_name='test-adb-push-image.png')
 
 
 # Take Screenshot test
-def test_take_screenshot():
-
-    # Get AndroidDevice object
-    phone = get_android_device()
+def test_take_screencap(device:AndroidDevice):
 
     # Take device screenshot
-    phone.take_screenshot(output_path='./temp/screencap.png')
+    device.take_screencap(output_path='./temp/test_screencap.png')
 
 
 # Call main function
