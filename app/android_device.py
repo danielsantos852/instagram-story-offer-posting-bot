@@ -108,8 +108,13 @@ class AndroidDevice:
 
 
     # Delete File From SD Card method
-    def delete_file_from_sdcard(self) -> None:
+    def delete_image_from_sdcard(self, file_path:str) -> None:
         
+        # Delete file from device's SD card
+        print(f'Deleting {file_path} ...', end='')
+        self.device_adb.shell(f'rm {file_path}')
+        print('Done.')
+
         # Return nothing
         return None
 
