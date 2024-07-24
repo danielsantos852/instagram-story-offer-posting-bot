@@ -6,7 +6,7 @@ from android_device import AndroidDevice, get_android_device
 def main():
 
     # Get AndroidDevice object
-    phone = test_get_android_device()
+    phone = get_android_device()
 
     # Post a story on Instagram
     phone.post_instagram_story(post_image='./resources/templates/story_image_720x1280_blank.png',
