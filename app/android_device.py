@@ -9,9 +9,15 @@ import random
 import time
 
 
-# Global variables
-ADB_DEFAULT_HOST = '127.0.0.1'
-ADB_DEFAULT_PORT = 5037
+# GLOBAL VARIABLES
+
+# Default values
+DEFAULT_ADB_HOST = '127.0.0.1'
+DEFAULT_ADB_PORT = 5037
+DEFAULT_ADB_PUSH_DESTINATION_FOLDER = '/sdcard/adb-push-files/'
+DEFAULT_ADB_PUSH_DESTINATION_FILE_NAME = 'image.png'
+
+# Sprites
 SPRITE_ADDSTICKER = './resources/sprites/addsticker.png'
 SPRITE_ADDTOSTORY = './resources/sprites/addtostory.png'
 SPRITE_CLOSEFRIENDS = './resources/sprites/closefriends.png'
@@ -123,8 +129,8 @@ class AndroidDevice:
         attempt_counter = 0
         while True:
 
-            # Use device screenshot as set image
-            set_image = PIL.Image.open(fp=BytesIO(self.take_screenshot()),
+            # Use device screencap as set image
+            set_image = PIL.Image.open(fp=BytesIO(self.take_screencap()),
                                        mode='r')
 
             # Attempt to locate subset image in set image
@@ -216,7 +222,7 @@ class AndroidDevice:
     # Launch Instagram App method
     def launch_instagram_app(self, 
                              force_restart:bool = True, 
-                             wait_time:int = 1
+                             wait_time:int = 3
                              ) -> None:
 
         # Force-stop Instagram app if force restart required
@@ -264,35 +270,54 @@ class AndroidDevice:
         return None
 
 
-    # Push File To SD Card method
-    def push_file_to_sdcard(self) -> None:
+    # Push Image To SD Card method
+    def push_image_to_sdcard(self, 
+                             src_file_path:str, 
+                             dest_folder_path:str = DEFAULT_ADB_PUSH_DESTINATION_FOLDER,
+                             dest_file_name:str = DEFAULT_ADB_PUSH_DESTINATION_FILE_NAME 
+                             ) -> None:
         
+        # Set destination file path
+        dest_file_path = f'{dest_folder_path}{dest_file_name}'
+
+        # Push file from host machine to android device
+        print('Pushing image file to sdcard ...', end='')
+        self.device_adb.push(src=src_file_path,
+                             dest=dest_file_path)
+        print('Done.')
+
+        # Make Android device "recognize" JPG file as a media file
+        print('Making image file recognizable as media file ...', end='')
+        self.device_adb.shell(f'am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d file://{dest_file_path}')
+        print('Done.')
+
         # Return nothing
         return None
 
 
-    # Take Screenshot method
-    def take_screenshot(self, output_path:str|None = None) -> bytearray:
+    # Take Screencap method
+    def take_screencap(self, output_path:str|None = None) -> bytearray:
         
-        # Take device screenshot
-        print(f'Taking device screenshot ... ', end='')
-        screenshot = self.device_adb.screencap()
+        # Take device screencap
+        print(f'Taking device screencap ... ', end='')
+        screencap = self.device_adb.screencap()
         print('Done.')
 
-        # If specified output path, save screenshot to it
+        # If specified output path, save screencap to it
         if output_path:
+            print(f'Saving screencap to {output_path} ...', end='')
             with open(output_path, 'wb') as file:
-                file.write(screenshot)
-            print(f'Screenshot saved at {output_path}.')
+                file.write(screencap)
+            print('Done.')
 
-        # Return screenshot as bytearray
-        return screenshot
+        # Return screencap as bytearray
+        return screencap
 
 
 # Get Android Device function
 def get_android_device(device_name:str = 'Generic Android Device',
-                       host:str = ADB_DEFAULT_HOST, 
-                       port:int = ADB_DEFAULT_PORT
+                       host:str = DEFAULT_ADB_HOST, 
+                       port:int = DEFAULT_ADB_PORT
                        ) -> AndroidDevice:
 
     # Connect to adb server
