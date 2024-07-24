@@ -9,15 +9,11 @@ import random
 import time
 
 
-# GLOBAL VARIABLES
-
-# Default values
+# Global Configuration
 DEFAULT_ADB_HOST = '127.0.0.1'
 DEFAULT_ADB_PORT = 5037
 DEFAULT_ADB_PUSH_DESTINATION_FOLDER = '/sdcard/adb-push-files/'
 DEFAULT_ADB_PUSH_DESTINATION_FILE_NAME = 'image.png'
-
-# Sprites
 SPRITE_ADDSTICKER = './resources/sprites/addsticker.png'
 SPRITE_ADDTOSTORY = './resources/sprites/addtostory.png'
 SPRITE_CLOSEFRIENDS = './resources/sprites/closefriends.png'
@@ -32,6 +28,7 @@ SPRITE_RECENTS = './resources/sprites/recents.png'
 SPRITE_SEARCHFIELD = './resources/sprites/searchfield.png'
 SPRITE_URLFIELD = './resources/sprites/urlfield.png'
 SPRITE_YOURSTORY = './resources/sprites/yourstory.png'
+pyautogui.useImageNotFoundException(True)
 
 
 # The Android Device class
@@ -124,12 +121,11 @@ class AndroidDevice:
                        subset_image:str, 
                        subset_image_name:str = 'subset_image', 
                        max_attempts:int = 3, 
-                       time_between_attempts:int = 2,
+                       time_between_attempts:int = 3,
                        confidence_lvl:float = 0.9 
                        ) -> Box|None:
 
         # Start attempts to find image subset in image set
-        pyautogui.useImageNotFoundException(True)
         subset_image_box = None
         attempt_counter = 0
         while True:
@@ -201,9 +197,9 @@ class AndroidDevice:
     def input_screen_tap(self, 
                          tap_box:Box, 
                          wait_time:float = 1, 
-                         centered_tap:bool = False,
                          x_offset:int = 0,
-                         y_offset:int = 0
+                         y_offset:int = 0,
+                         centered_tap:bool = False
                          ) -> None:
 
         # If centered tap, get tap box's center coordinates
@@ -245,13 +241,19 @@ class AndroidDevice:
 
         # Force-stop Instagram app if force restart required
         if force_restart==True:
+            print('Force-stopping Instagram app ... ', end='')
             self.device_adb.shell('am force-stop com.instagram.android')
+            print('Done.')
 
         # (Re-)Start Instagram app
+        print('Starting Instagram app ... ', end='')
         self.device_adb.shell('monkey -p com.instagram.android 1')
+        print('Done.')
 
         # Wait some time (for convenience)
+        print(f'Waiting for {wait_time} seconds ... ', end='')
         time.sleep(wait_time)
+        print('Done.')
 
         # Return nothing
         return None
@@ -272,28 +274,30 @@ class AndroidDevice:
         self.launch_instagram_app(2)
 
         # Click on "Add to story" button (blue circle with white cross)
-        sprite_box = self.find_on_screen(SPRITE_ADDTOSTORY, '"Add to story" button')
-        self.input_screen_tap(sprite_box, 2)
+        sprite_box = self.find_on_screen(SPRITE_ADDTOSTORY, '"Add to story" button', 3, 1)
+        while sprite_box:
+            self.input_screen_tap(sprite_box, 1)
+            sprite_box = self.find_on_screen(SPRITE_ADDTOSTORY, '"Add to story" button', 1, 0)
 
         # Select post image from gallery
         sprite_box = self.find_on_screen(SPRITE_RECENTS, '"Recents" header')
-        self.input_screen_tap(sprite_box, 1, False, 0, 300)
+        self.input_screen_tap(sprite_box, 0.5, 0, 300)
 
         # If link sticker URL provided:
         if linksticker_url:
 
             # Click on "Add a sticker"
             sprite_box = self.find_on_screen(SPRITE_ADDSTICKER, '"Add sticker" button')
-            self.input_screen_tap(sprite_box, 1)
+            self.input_screen_tap(sprite_box, 0.5)
 
             # Click on "Search" field and type "link"
             sprite_box = self.find_on_screen(SPRITE_SEARCHFIELD, '"Search" field')
-            self.input_screen_tap(sprite_box, 1)
+            self.input_screen_tap(sprite_box, 0.2)
             self.input_text('link')
 
             # Select "LINK" sticker
             sprite_box = self.find_on_screen(SPRITE_LINKSTICKER, '"LINK" sticker')
-            self.input_screen_tap(sprite_box, 1)
+            self.input_screen_tap(sprite_box, 0.1)
 
             # Input link sticker url
             self.input_text(linksticker_url)
@@ -303,17 +307,17 @@ class AndroidDevice:
 
                 # Click on "Customize sticker text" and input customized text
                 sprite_box = self.find_on_screen(SPRITE_CUSTOMIZESTICKERTEXT, '"Customize sticker text" button')
-                self.input_screen_tap(sprite_box, 1)
+                self.input_screen_tap(sprite_box, 0.1)
                 self.input_text(linksticker_custom_text)
 
             # Click on "Done"
             sprite_box = self.find_on_screen(SPRITE_DONE, '"Done" button')
-            self.input_screen_tap(sprite_box, 1)
+            self.input_screen_tap(sprite_box, 0.5)
 
             # Change link sticker color
             sprite_box = self.find_on_screen(SPRITE_LINKSTICKER_BLUE, 'blue link sticker')
             for _ in range(3):
-                self.input_screen_tap(sprite_box, 1)
+                self.input_screen_tap(sprite_box, 0.4)
 
             # Drag link sticker to final position (bottom, center)
             self.input_screen_drag_and_drop(sprite_box, 0, 920, 2000, 1)
@@ -323,7 +327,7 @@ class AndroidDevice:
             sprite_box = self.find_on_screen(SPRITE_CLOSEFRIENDS, '"Close Friends" button')
         else:
             sprite_box = self.find_on_screen(SPRITE_YOURSTORY, '"Your Story" button')
-        self.input_screen_tap(sprite_box, 1)
+        self.input_screen_tap(sprite_box, 0)
 
         # Delete post image from device's sd card
         self.delete_image_from_sdcard(post_image)
@@ -344,13 +348,13 @@ class AndroidDevice:
         dest_file_path = f'{dest_folder_path}{dest_file_name}'
 
         # Push file from host machine to android device
-        print('Pushing image file to sdcard ...', end='')
+        print('Pushing image file to sdcard ... ', end='')
         self.device_adb.push(src=src_file_path,
                              dest=dest_file_path)
         print('Done.')
 
         # Make Android device "recognize" JPG file as a media file
-        print('Making image file recognizable as media file ...', end='')
+        print('Making image file recognizable as media file ... ', end='')
         self.device_adb.shell(f'am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d file://{dest_file_path}')
         print('Done.')
 
