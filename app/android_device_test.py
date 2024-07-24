@@ -11,8 +11,13 @@ def main():
     # Push a file to device sd card
     test_push_image_to_sdcard(phone)
 
+    input('Press any key to continue...')
 
-# Get Android Device Test
+    # Delete file from sd card
+    test_delete_image_from_sdcard(phone)
+
+
+# Get Android Device test
 def test_get_android_device(device_name:str = 'test_android_device') -> AndroidDevice:
 
     # Get AndroidDevice object
@@ -21,6 +26,16 @@ def test_get_android_device(device_name:str = 'test_android_device') -> AndroidD
 
     # Return AndroidDevice object
     return phone
+
+
+# Delete Image From SD Card test
+def test_delete_image_from_sdcard(device:AndroidDevice):
+
+    # Delete test image file from default adb push destination folder
+    device.delete_image_from_sdcard(file_path='/sdcard/adb-push-files/test-adb-push-image.png')
+
+    # Return nothing
+    return None
 
 
 # Find On Screen test
@@ -80,8 +95,12 @@ def test_post_instagram_story(device:AndroidDevice):
 # Push File To SD Card test
 def test_push_image_to_sdcard(device:AndroidDevice):
     
+    # Push test file to default adb push destination folder
     device.push_image_to_sdcard(src_file_path='./resources/templates/story_image_720x1280_blank.png',
                                 dest_file_name='test-adb-push-image.png')
+
+    # Return nothing
+    return None
 
 
 # Take Screenshot test
