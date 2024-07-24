@@ -23,10 +23,10 @@ SPRITE_ADDTOSTORY = './resources/sprites/addtostory.png'
 SPRITE_CLOSEFRIENDS = './resources/sprites/closefriends.png'
 SPRITE_CUSTOMIZESTICKERTEXT = './resources/sprites/customizestickertext.png'
 SPRITE_DONE = './resources/sprites/done.png'
-SPRITE_LINKSTICKER_BLACK = './resources/sprites/linksticker_black.png'
-SPRITE_LINKSTICKER_BLUE = './resources/sprites/linksticker_blue.png'
-SPRITE_LINKSTICKER_COLOURED = './resources/sprites/linksticker_coloured.png'
-SPRITE_LINKSTICKER_WHITE = './resources/sprites/linksticker_white.png'
+SPRITE_LINKSTICKER_BLACK = './resources/sprites/linksticker-black.png'
+SPRITE_LINKSTICKER_BLUE = './resources/sprites/linksticker-blue.png'
+SPRITE_LINKSTICKER_COLOURED = './resources/sprites/linksticker-coloured.png'
+SPRITE_LINKSTICKER_WHITE = './resources/sprites/linksticker-white.png'
 SPRITE_LINKSTICKER = './resources/sprites/linksticker.png'
 SPRITE_RECENTS = './resources/sprites/recents.png'
 SPRITE_SEARCHFIELD = './resources/sprites/searchfield.png'
@@ -172,8 +172,8 @@ class AndroidDevice:
                                    dx:int, 
                                    dy:int, 
                                    duration:int, 
-                                   centered_drag:bool=False,
-                                   wait_time:float = 1
+                                   wait_time:float = 1,
+                                   centered_drag:bool=False
                                    ) -> None:
 
         # If centered drag, get drag box's center coordinates
@@ -260,12 +260,13 @@ class AndroidDevice:
     # Post Instagram Story method
     def post_instagram_story(self,
                              post_image:str,
-                             add_linksticker:bool = False,
-                             linksticker_url='www.google.com'
+                             linksticker_url:str|None = None,
+                             linksticker_custom_text:str|None = None,
+                             close_friends_only:bool = True
                              ) -> None:
 
         # Push post image to device sd card
-        self.push_image_to_sdcard(post_image)
+        post_image = self.push_image_to_sdcard(post_image)
 
         # Launch Instagram app
         self.launch_instagram_app(2)
@@ -278,20 +279,54 @@ class AndroidDevice:
         sprite_box = self.find_on_screen(SPRITE_RECENTS, '"Recents" header')
         self.input_screen_tap(sprite_box, 1, False, 0, 300)
 
-        # Click on "Add a sticker"
-        sprite_box = self.find_on_screen(SPRITE_ADDSTICKER, '"Add sticker" button')
+        # If link sticker URL provided:
+        if linksticker_url:
+
+            # Click on "Add a sticker"
+            sprite_box = self.find_on_screen(SPRITE_ADDSTICKER, '"Add sticker" button')
+            self.input_screen_tap(sprite_box, 1)
+
+            # Click on "Search" field and type "link"
+            sprite_box = self.find_on_screen(SPRITE_SEARCHFIELD, '"Search" field')
+            self.input_screen_tap(sprite_box, 1)
+            self.input_text('link')
+
+            # Select "LINK" sticker
+            sprite_box = self.find_on_screen(SPRITE_LINKSTICKER, '"LINK" sticker')
+            self.input_screen_tap(sprite_box, 1)
+
+            # Input link sticker url
+            self.input_text(linksticker_url)
+
+            # If link sticker customized text provided:
+            if linksticker_custom_text:
+
+                # Click on "Customize sticker text" and input customized text
+                sprite_box = self.find_on_screen(SPRITE_CUSTOMIZESTICKERTEXT, '"Customize sticker text" button')
+                self.input_screen_tap(sprite_box, 1)
+                self.input_text(linksticker_custom_text)
+
+            # Click on "Done"
+            sprite_box = self.find_on_screen(SPRITE_DONE, '"Done" button')
+            self.input_screen_tap(sprite_box, 1)
+
+            # Change link sticker color
+            sprite_box = self.find_on_screen(SPRITE_LINKSTICKER_BLUE, 'blue link sticker')
+            for _ in range(3):
+                self.input_screen_tap(sprite_box, 1)
+
+            # Drag link sticker to final position (bottom, center)
+            self.input_screen_drag_and_drop(sprite_box, 0, 920, 2000, 1)
+
+        # Post story to designated group
+        if close_friends_only:
+            sprite_box = self.find_on_screen(SPRITE_CLOSEFRIENDS, '"Close Friends" button')
+        else:
+            sprite_box = self.find_on_screen(SPRITE_YOURSTORY, '"Your Story" button')
         self.input_screen_tap(sprite_box, 1)
-
-        # Click on "Search" field and type "link"
-        sprite_box = self.find_on_screen(SPRITE_SEARCHFIELD, '"Search" field')
-        self.input_screen_tap(sprite_box, 1)
-        self.input_text('link')
-
-        # Position link sticker
-
-        # Post story
 
         # Delete post image from device's sd card
+        self.delete_image_from_sdcard(post_image)
 
         # Return nothing
         print('Instagram story posted.')
@@ -303,7 +338,7 @@ class AndroidDevice:
                              src_file_path:str, 
                              dest_folder_path:str = DEFAULT_ADB_PUSH_DESTINATION_FOLDER,
                              dest_file_name:str = DEFAULT_ADB_PUSH_DESTINATION_FILE_NAME 
-                             ) -> None:
+                             ) -> str:
         
         # Set destination file path
         dest_file_path = f'{dest_folder_path}{dest_file_name}'
@@ -319,8 +354,8 @@ class AndroidDevice:
         self.device_adb.shell(f'am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d file://{dest_file_path}')
         print('Done.')
 
-        # Return nothing
-        return None
+        # Return destination file path
+        return dest_file_path
 
 
     # Take Screencap method
