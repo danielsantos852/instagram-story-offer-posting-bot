@@ -8,13 +8,11 @@ def main():
     # Get AndroidDevice object
     phone = test_get_android_device()
 
-    # Push a file to device sd card
-    test_push_image_to_sdcard(phone)
-
-    input('Press any key to continue...')
-
-    # Delete file from sd card
-    test_delete_image_from_sdcard(phone)
+    # Post a story on Instagram
+    phone.post_instagram_story(post_image='./resources/templates/story_image_720x1280_blank.png',
+                               linksticker_url='www.google.com',
+                               linksticker_custom_text='ver oferta',
+                               close_friends_only=True)
 
 
 # Get Android Device test
@@ -42,31 +40,31 @@ def test_delete_image_from_sdcard(device:AndroidDevice):
 def test_find_on_screen(device:AndroidDevice):
 
     # Launch Instagram app
-    device.launch_instagram_app(force_restart=True)
+    #device.launch_instagram_app()
 
     # Find "Add to story" button on screen
-    box = device.find_on_screen(subset_image='./resources/00a_btn_addtostory.png',
+    box = device.find_on_screen(subset_image='./resources/sprites/addtostory.png',
                                 subset_image_name='"Add to story" button',
                                 confidence_lvl=0.9,
-                                max_attempts=5,
+                                max_attempts=3,
                                 time_between_attempts=3)
 
 
 # Screen Drag-And-Drop test
-def test_input_screen_drag_and_drop():
-    
-    # Get an Android device
-    phone = get_android_device(device_name='Poco X3 NFC')
+def test_input_screen_drag_and_drop(device:AndroidDevice) -> None:
 
     # Find link sticker icon on device screen
-    sticker_box = phone.find_on_screen(image_subset='./resources/08a_ico_linksticker_blue.png')
+    sticker_box = device.find_on_screen(image_subset='./resources/templates/linksticker-blue.png')
 
     # Drag sticker down
-    phone.input_screen_drag_and_drop(drag_box=sticker_box,
-                                     dx=0,
-                                     dy=920,
-                                     duration=2000,
-                                     centered_drag=False)
+    device.input_screen_drag_and_drop(drag_box=sticker_box,
+                                      dx=0,
+                                      dy=920,
+                                      duration=2000,
+                                      centered_drag=False)
+    
+    # Return nothing
+    return None
 
 
 # Screen Tap test
