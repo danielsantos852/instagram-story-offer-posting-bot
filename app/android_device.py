@@ -123,13 +123,13 @@ class AndroidDevice:
     def find_on_screen(self, 
                        subset_image:str, 
                        subset_image_name:str = 'subset_image', 
-                       confidence_lvl:float = 0.9, 
-                       max_attempts:int = 1, 
-                       time_between_attempts:int = 3
+                       max_attempts:int = 3, 
+                       time_between_attempts:int = 2,
+                       confidence_lvl:float = 0.9 
                        ) -> Box|None:
 
         # Start attempts to find image subset in image set
-        pyautogui.useImageNotFoundException(False)
+        pyautogui.useImageNotFoundException(True)
         subset_image_box = None
         attempt_counter = 0
         while True:
@@ -141,12 +141,13 @@ class AndroidDevice:
             # Attempt to locate subset image in set image
             attempt_counter += 1
             print(f'Attempting to locate {subset_image_name} (attempt #{attempt_counter}) ... ', end='')
-            subset_image_box = pyautogui.locate(needleImage=subset_image,
-                                                haystackImage=set_image,
-                                                confidence=confidence_lvl)
+            try:
+                subset_image_box = pyautogui.locate(needleImage=subset_image,
+                                                    haystackImage=set_image,
+                                                    confidence=confidence_lvl)
 
             # If subset image not found:
-            if not subset_image_box:
+            except pyautogui.ImageNotFoundException:
 
                 # If more attempts left, wait some time and move to next attempt
                 if attempt_counter < max_attempts:
@@ -172,7 +173,7 @@ class AndroidDevice:
                                    dy:int, 
                                    duration:int, 
                                    centered_drag:bool=False,
-                                   wait_time:int = 1
+                                   wait_time:float = 1
                                    ) -> None:
 
         # If centered drag, get drag box's center coordinates
@@ -199,19 +200,21 @@ class AndroidDevice:
     # Input Screen Tap method
     def input_screen_tap(self, 
                          tap_box:Box, 
+                         wait_time:float = 1, 
                          centered_tap:bool = False,
-                         wait_time:int = 1
+                         x_offset:int = 0,
+                         y_offset:int = 0
                          ) -> None:
 
         # If centered tap, get tap box's center coordinates
         if centered_tap:
-            x = box_center(tap_box).x
-            y = box_center(tap_box).y
+            x = box_center(tap_box).x + x_offset
+            y = box_center(tap_box).y + y_offset
 
         # Else, get random coordinates inside tap box
         else:
-            x = random.randint(tap_box.left, (tap_box.left + tap_box.width))
-            y = random.randint(tap_box.top, (tap_box.top + tap_box.height))
+            x = random.randint(tap_box.left, (tap_box.left + tap_box.width)) + x_offset
+            y = random.randint(tap_box.top, (tap_box.top + tap_box.height)) + y_offset
 
         # Input tap on device's screen
         self.device_adb.shell(f'input tap {x} {y}')
@@ -224,10 +227,20 @@ class AndroidDevice:
         return None
 
 
+    # Input Text method
+    def input_text(self, text:str='') -> None:
+
+        # Input text
+        self.device_adb.input_text(text)
+
+        # Return nothing
+        return None
+
+
     # Launch Instagram App method
-    def launch_instagram_app(self, 
-                             force_restart:bool = True, 
-                             wait_time:int = 3
+    def launch_instagram_app(self,
+                             wait_time:float = 3,
+                             force_restart:bool = True
                              ) -> None:
 
         # Force-stop Instagram app if force restart required
@@ -245,24 +258,34 @@ class AndroidDevice:
 
 
     # Post Instagram Story method
-    def post_instagram_story(self):
+    def post_instagram_story(self,
+                             post_image:str,
+                             add_linksticker:bool = False,
+                             linksticker_url='www.google.com'
+                             ) -> None:
 
-        # Push post image to device's sd card
-        self.push_file_to_sdcard()
+        # Push post image to device sd card
+        self.push_image_to_sdcard(post_image)
 
         # Launch Instagram app
-        self.launch_instagram_app(force_restart=True, 
-                                  wait_time=3)
+        self.launch_instagram_app(2)
 
-        # Click on "Add to story" (white cross in blue circle) button
-        sprite_box = self.find_on_screen(subset_image=SPRITE_ADDTOSTORY,
-                                         subset_image_name='"Add to story" button',
-                                         max_attempts=5,
-                                         time_between_attempts=3)
-        self.input_screen_tap(tap_box=sprite_box,
-                              wait_time=1)
+        # Click on "Add to story" button (blue circle with white cross)
+        sprite_box = self.find_on_screen(SPRITE_ADDTOSTORY, '"Add to story" button')
+        self.input_screen_tap(sprite_box, 2)
 
-        # Add link sticker
+        # Select post image from gallery
+        sprite_box = self.find_on_screen(SPRITE_RECENTS, '"Recents" header')
+        self.input_screen_tap(sprite_box, 1, False, 0, 300)
+
+        # Click on "Add a sticker"
+        sprite_box = self.find_on_screen(SPRITE_ADDSTICKER, '"Add sticker" button')
+        self.input_screen_tap(sprite_box, 1)
+
+        # Click on "Search" field and type "link"
+        sprite_box = self.find_on_screen(SPRITE_SEARCHFIELD, '"Search" field')
+        self.input_screen_tap(sprite_box, 1)
+        self.input_text('link')
 
         # Position link sticker
 
