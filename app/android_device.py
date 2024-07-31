@@ -42,8 +42,8 @@ SPRITE_YOURSTORY = './resources/sprites/yourstory.png'
 pyautogui.useImageNotFoundException(True)
 
 
-# The Android Device class
-class AndroidDevice:
+# The Device class
+class Device:
 
     # __init__ method
     def __init__(self,
@@ -404,7 +404,7 @@ class AndroidDevice:
 def get_android_device(device_name:str = 'Generic Android Device',
                        host:str = DEFAULT_ADB_HOST, 
                        port:int = DEFAULT_ADB_PORT
-                       ) -> AndroidDevice:
+                       ) -> Device:
 
     logger.info(f'Connecting to "{device_name}" at {host}:{port}...')
 
@@ -435,8 +435,8 @@ def get_android_device(device_name:str = 'Generic Android Device',
 
     logger.info(f'"{device_name}" connected.')
 
-    # Return AndroidDevice object
-    return AndroidDevice(device_adb=device_adb,
+    # Return Device object
+    return Device(device_adb=device_adb,
                          device_id=device_id,
                          device_name=device_name,
                          device_host=host,
