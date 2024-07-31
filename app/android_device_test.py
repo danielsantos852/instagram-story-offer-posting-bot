@@ -109,5 +109,4 @@ def test_take_screencap(device:AndroidDevice):
 
 
 # Call main function
-if __name__=='__main__':
-    main()
+if __name__=='__main__': main()
