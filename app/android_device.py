@@ -1,12 +1,23 @@
 # Imports
 from io import BytesIO
+import logging
 import PIL
 from ppadb.client import Client as AdbClient
 from ppadb.device import Device as AdbDevice
 import pyautogui
 from pyscreeze import Box, center as box_center
 import random
+import sys
 import time
+
+
+# Logger Configuration
+logger = logging.getLogger(name=__name__)
+logger.setLevel(level=logging.INFO)
+handler = logging.FileHandler(filename='./logs/android_device.log', mode='a')
+formatter = logging.Formatter(fmt='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler.setFormatter(fmt=formatter)
+logger.addHandler(hdlr=handler)
 
 
 # Global Configuration
@@ -33,7 +44,7 @@ pyautogui.useImageNotFoundException(True)
 
 # The Android Device class
 class AndroidDevice:
-    
+
     # __init__ method
     def __init__(self,
                  device_adb:AdbDevice|None,
@@ -41,11 +52,13 @@ class AndroidDevice:
                  device_name:str,
                  device_host:str,
                  device_port:int,
-                 device_status:str,
                  device_screen_width:int,
                  device_screen_height:int
                  ) -> None:
         
+        # Instance logger setup
+        self._instance_logger = logging.getLogger(__name__).getChild(self.__class__.__name__)#.getChild(str(device_id))
+
         # Validate device adb object
         if not device_adb:
             raise ValueError("Missing adb device object.")
@@ -74,10 +87,6 @@ class AndroidDevice:
         if not device_port:
             raise ValueError("Missing device port.")
 
-        # Validate device status
-        if not device_status:
-            raise ValueError("Missing device status.")
-
         # Set object attributes
         self.device_adb = device_adb
         self.device_id = device_id
@@ -86,7 +95,6 @@ class AndroidDevice:
         self.device_screen_height = device_screen_height
         self.device_host = device_host
         self.device_port = device_port
-        self.device_status = device_status
 
         # Return nothing
         return None
@@ -95,22 +103,21 @@ class AndroidDevice:
     # __str__ method
     def __str__(self) -> str:
         return f'======================== DEVICE INFO ========================\n'\
-            f'device_adb:      {self.device_adb}\n'\
-            f'device_id:       {self.device_id}\n'\
-            f'device_name:     {self.device_name}\n'\
-            f'device_scrn_res: {self.device_screen_width} x {self.device_screen_height} pixels\n'\
-            f'device_address:  {self.device_host}:{self.device_port}\n'\
-            f'device_status:   {self.device_status}\n'\
-            f'============================================================='
+               f'device_adb:      {self.device_adb}\n'\
+               f'device_id:       {self.device_id}\n'\
+               f'device_name:     {self.device_name}\n'\
+               f'device_scrn_res: {self.device_screen_width} x {self.device_screen_height} pixels\n'\
+               f'device_address:  {self.device_host}:{self.device_port}\n'\
+               f'============================================================='
 
 
-    # Delete File From SD Card method
+    # Delete Image From SD Card method
     def delete_image_from_sdcard(self, file_path:str) -> None:
         
         # Delete file from device's SD card
-        print(f'Deleting {file_path} ...', end='')
+        self._instance_logger.debug(f'Delete "{file_path}" ...')
         self.device_adb.shell(f'rm {file_path}')
-        print('Done.')
+        self._instance_logger.debug(f'Done.')
 
         # Return nothing
         return None
@@ -136,7 +143,7 @@ class AndroidDevice:
 
             # Attempt to locate subset image in set image
             attempt_counter += 1
-            print(f'Attempting to locate {subset_image_name} (attempt #{attempt_counter}) ... ', end='')
+            self._instance_logger.debug(f"Find {subset_image_name} on screen (attempt {attempt_counter} of {max_attempts}) ...")
             try:
                 subset_image_box = pyautogui.locate(needleImage=subset_image,
                                                     haystackImage=set_image,
@@ -147,18 +154,18 @@ class AndroidDevice:
 
                 # If more attempts left, wait some time and move to next attempt
                 if attempt_counter < max_attempts:
-                    print(f'Not found (next attempt in {time_between_attempts} seconds).')
+                    self._instance_logger.debug(f'Not found. (Next attempt in {time_between_attempts} seconds.)')
                     time.sleep(time_between_attempts)
                     continue
 
                 # Else (no attempts left), stop attempting, return nothing
                 else:
-                    print(f'Not found (no attempts left).')
+                    self._instance_logger.debug(f'Not found. (No attempts left.)')
                     return None
 
             # Else (subset image found), return subset image box
             else:
-                print(f'Found at {subset_image_box}. ')
+                self._instance_logger.debug(f'Found. ({subset_image_box})')
                 return subset_image_box
 
 
@@ -183,9 +190,10 @@ class AndroidDevice:
             y_0 = random.randint(drag_box.top, (drag_box.top + drag_box.height))
 
         # Input drag and drop on device's screen
+        self._instance_logger.debug(f'Input drag-and-drop from ({x_0}, {y_0}) to ({x_0+dx}, {y_0+dy}), duration {duration} ...')
         self.device_adb.shell(f'input draganddrop {x_0} {y_0} {x_0+dx} {y_0+dy} {duration}')
-        print(f'Drag-and-drop from (x,y)=({x_0}, {y_0}) to (x,y)=({x_0+dx}, {y_0+dy}).')
-
+        self._instance_logger.debug(f'Done.')
+        
         # Wait some time (for convenience)
         time.sleep(wait_time)
 
@@ -213,8 +221,9 @@ class AndroidDevice:
             y = random.randint(tap_box.top, (tap_box.top + tap_box.height)) + y_offset
 
         # Input tap on device's screen
+        self._instance_logger.debug(f'Input tap on ({x}, {y}) ...')
         self.device_adb.shell(f'input tap {x} {y}')
-        print(f'Screen tapped at (x, y) = ({x}, {y})')
+        self._instance_logger.debug('Done.')
 
         # Wait some time (for convenience)
         time.sleep(wait_time)
@@ -227,7 +236,9 @@ class AndroidDevice:
     def input_text(self, text:str='') -> None:
 
         # Input text
+        self._instance_logger.debug(f'Input text "{text}" ...')
         self.device_adb.input_text(text)
+        self._instance_logger.debug('Done.')
 
         # Return nothing
         return None
@@ -241,19 +252,17 @@ class AndroidDevice:
 
         # Force-stop Instagram app if force restart required
         if force_restart==True:
-            print('Force-stopping Instagram app ... ', end='')
+            self._instance_logger.debug('Force-stop Instagram app ...')
             self.device_adb.shell('am force-stop com.instagram.android')
-            print('Done.')
+            self._instance_logger.debug('Done.')
 
         # (Re-)Start Instagram app
-        print('Starting Instagram app ... ', end='')
+        self._instance_logger.debug('(Re-)Start Instagram app ...')
         self.device_adb.shell('monkey -p com.instagram.android 1')
-        print('Done.')
+        self._instance_logger.debug('Done.')
 
         # Wait some time (for convenience)
-        print(f'Waiting for {wait_time} seconds ... ', end='')
         time.sleep(wait_time)
-        print('Done.')
 
         # Return nothing
         return None
@@ -267,24 +276,31 @@ class AndroidDevice:
                              close_friends_only:bool = True
                              ) -> None:
 
-        # Push post image to device sd card
+        self._instance_logger.info('Posting Instagram story:')
+
+        # Push post image to device's sd card
+        self._instance_logger.info(f"Pushing post image to device's sd card...")
         post_image = self.push_image_to_sdcard(post_image)
 
         # Launch Instagram app
+        self._instance_logger.info("Launching Instagram App...")
         self.launch_instagram_app(2)
 
         # Click on "Add to story" button (blue circle with white cross)
+        self._instance_logger.info('Creating new Instagram story post...')
         sprite_box = self.find_on_screen(SPRITE_ADDTOSTORY, '"Add to story" button', 3, 1)
         while sprite_box:
             self.input_screen_tap(sprite_box, 1)
             sprite_box = self.find_on_screen(SPRITE_ADDTOSTORY, '"Add to story" button', 1, 0)
 
         # Select post image from gallery
+        self._instance_logger.info('Selecting post image from gallery...')
         sprite_box = self.find_on_screen(SPRITE_RECENTS, '"Recents" header')
         self.input_screen_tap(sprite_box, 0.5, 0, 300)
 
         # If link sticker URL provided:
         if linksticker_url:
+            self._instance_logger.info('Adding link sticker...')
 
             # Click on "Add a sticker"
             sprite_box = self.find_on_screen(SPRITE_ADDSTICKER, '"Add sticker" button')
@@ -324,16 +340,20 @@ class AndroidDevice:
 
         # Post story to designated group
         if close_friends_only:
+            self._instance_logger.info('Posting story (to Close Friends only)...')
             sprite_box = self.find_on_screen(SPRITE_CLOSEFRIENDS, '"Close Friends" button')
         else:
+            self._instance_logger.info('Posting story (to all followers)...')
             sprite_box = self.find_on_screen(SPRITE_YOURSTORY, '"Your Story" button')
         self.input_screen_tap(sprite_box, 0)
 
         # Delete post image from device's sd card
+        self._instance_logger.info("Deleting post image from device's sd card...")
         self.delete_image_from_sdcard(post_image)
 
+        self._instance_logger.info('Instagram story posted.')
+
         # Return nothing
-        print('Instagram story posted.')
         return None
 
 
@@ -348,15 +368,14 @@ class AndroidDevice:
         dest_file_path = f'{dest_folder_path}{dest_file_name}'
 
         # Push file from host machine to android device
-        print('Pushing image file to sdcard ... ', end='')
-        self.device_adb.push(src=src_file_path,
-                             dest=dest_file_path)
-        print('Done.')
+        self._instance_logger.debug(f'Push file "{src_file_path}" to "{dest_file_path}" ...')
+        self.device_adb.push(src=src_file_path, dest=dest_file_path)
+        self._instance_logger.debug('Done.')
 
         # Make Android device "recognize" JPG file as a media file
-        print('Making image file recognizable as media file ... ', end='')
+        self._instance_logger.debug(f'Scan file "{dest_file_path}" with media scanner ...')
         self.device_adb.shell(f'am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d file://{dest_file_path}')
-        print('Done.')
+        self._instance_logger.debug('Done.')
 
         # Return destination file path
         return dest_file_path
@@ -366,16 +385,16 @@ class AndroidDevice:
     def take_screencap(self, output_path:str|None = None) -> bytearray:
         
         # Take device screencap
-        print(f'Taking device screencap ... ', end='')
+        self._instance_logger.debug('Take device screencap ...')
         screencap = self.device_adb.screencap()
-        print('Done.')
+        self._instance_logger.debug('Done.')
 
         # If specified output path, save screencap to it
         if output_path:
-            print(f'Saving screencap to {output_path} ...', end='')
+            self._instance_logger.debug(f'Save screencap to {output_path} ...')
             with open(output_path, 'wb') as file:
                 file.write(screencap)
-            print('Done.')
+            self._instance_logger.debug('Done. ')
 
         # Return screencap as bytearray
         return screencap
@@ -387,31 +406,34 @@ def get_android_device(device_name:str = 'Generic Android Device',
                        port:int = DEFAULT_ADB_PORT
                        ) -> AndroidDevice:
 
-    # Connect to adb server
-    print(f'Connecting to adb client at {host}:{port} ... ', end='')
-    client = AdbClient(host=host, port=port)
-    print(f"Connected (ver. {client.version()}).")
+    logger.info(f'Connecting to "{device_name}" at {host}:{port}...')
 
-    # Look for available devices
-    print(f'Looking for available devices ... ', end='')
-    available_devices = client.devices()
-    if len(available_devices) == 0:
-        raise ConnectionAbortedError(f'No available devices found at {host}:{port}.')
-    print(f'Found {len(available_devices)}.')
-    
-    # Connect to first available device and get its id/serial
-    print(f'Connecting to first available device ... ', end='')
-    device_adb = available_devices[0]
-    device_id = device_adb.serial
-    device_status = "Connected"
-    print(f'{device_status} (device_id: {device_id}).')
+    # Connect to adb client
+    logger.debug(f'Connect to ADB client at {host}:{port} ...')
+    client = AdbClient(host=host, port=port)
+    logger.debug(f'Done. (Client version: {client.version()})')
+
+    # Connect to first available adb device
+    logger.debug(f'Connect to first available ADB device ...')
+    try:
+        device_adb = client.devices()[0]
+    except IndexError:
+        logger.error(f'No available devices found at {host}:{port}.', exc_info=False)
+        sys.exit()
+    else:
+        device_id = device_adb.serial
+        logger.debug(f'Done. (Device id: {device_id})')
 
     # Get device's screen width and height
+    logger.debug(f"Get device's screen resolution ...")
     screen_size = device_adb.shell('wm size') # e.g.: 'Physical size: [width]x[height]'
     screen_size = screen_size.replace('Physical size: ', '') # e.g.: '[width]x[height]'
     screen_width, screen_height = screen_size.split(sep='x') # e.g.: ('[width]', '[height]')
     screen_width = int(screen_width)
     screen_height = int(screen_height)
+    logger.debug(f'Done. (Screen resolution: {screen_width} x {screen_height} pixels)')
+
+    logger.info(f'"{device_name}" connected.')
 
     # Return AndroidDevice object
     return AndroidDevice(device_adb=device_adb,
@@ -419,6 +441,5 @@ def get_android_device(device_name:str = 'Generic Android Device',
                          device_name=device_name,
                          device_host=host,
                          device_port=port,
-                         device_status=device_status,
                          device_screen_width=screen_width,
                          device_screen_height=screen_height)
