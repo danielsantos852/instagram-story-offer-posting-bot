@@ -118,6 +118,56 @@ class Device:
 
 
     # --- Public Methods ---
+    # Get Device
+    @classmethod
+    def get(cls,
+            device_name:str = 'Generic Android Device',
+            host:str = DEFAULT_ADB_HOST, 
+            port:int = DEFAULT_ADB_PORT
+            ):
+
+        # Logger set up
+        _get_logger = logging.getLogger(__name__).getChild(cls.__name__).getChild('get')
+
+        _get_logger.info(f'Connecting to "{device_name}" at {host}:{port}...')
+
+        # Connect to adb client
+        _get_logger.debug(f'Connect to ADB client at {host}:{port} ...')
+        client = AdbClient(host=host, port=port)
+        _get_logger.debug(f'Done. (Client version: {client.version()})')
+
+        # Connect to first available adb device
+        _get_logger.debug(f'Connect to first available ADB device ...')
+        try:
+            device_adb = client.devices()[0]
+        except IndexError:
+            _get_logger.error(f'No available devices found at {host}:{port}.', exc_info=False)
+            sys.exit()
+        else:
+            device_id = device_adb.serial
+            _get_logger.debug(f'Done. (Device id: {device_id})')
+
+        # Get device's screen width and height
+        _get_logger.debug(f"Get device's screen resolution ...")
+        screen_size = device_adb.shell('wm size') # e.g.: 'Physical size: [width]x[height]'
+        screen_size = screen_size.replace('Physical size: ', '') # e.g.: '[width]x[height]'
+        screen_width, screen_height = screen_size.split(sep='x') # e.g.: ('[width]', '[height]')
+        screen_width = int(screen_width)
+        screen_height = int(screen_height)
+        _get_logger.debug(f'Done. (Screen resolution: {screen_width} x {screen_height} pixels)')
+
+        _get_logger.info(f'"{device_name}" connected.')
+
+        # Return Device object
+        return cls(device_adb=device_adb,
+                   device_id=device_id,
+                   device_name=device_name,
+                   device_host=host,
+                   device_port=port,
+                   device_screen_width=screen_width,
+                   device_screen_height=screen_height)
+
+
     # Post Instagram Story
     def post_instagram_story(self,
                              post_image:str,
@@ -205,57 +255,6 @@ class Device:
 
         # Return nothing
         return None
-
-
-    # --- Class Methods ---
-    # Get Device
-    @classmethod
-    def get(cls,
-            device_name:str = 'Generic Android Device',
-            host:str = DEFAULT_ADB_HOST, 
-            port:int = DEFAULT_ADB_PORT
-            ):
-
-        # Logger set up
-        _get_logger = logging.getLogger(__name__).getChild(cls.__name__).getChild('get')
-
-        _get_logger.info(f'Connecting to "{device_name}" at {host}:{port}...')
-
-        # Connect to adb client
-        _get_logger.debug(f'Connect to ADB client at {host}:{port} ...')
-        client = AdbClient(host=host, port=port)
-        _get_logger.debug(f'Done. (Client version: {client.version()})')
-
-        # Connect to first available adb device
-        _get_logger.debug(f'Connect to first available ADB device ...')
-        try:
-            device_adb = client.devices()[0]
-        except IndexError:
-            _get_logger.error(f'No available devices found at {host}:{port}.', exc_info=False)
-            sys.exit()
-        else:
-            device_id = device_adb.serial
-            _get_logger.debug(f'Done. (Device id: {device_id})')
-
-        # Get device's screen width and height
-        _get_logger.debug(f"Get device's screen resolution ...")
-        screen_size = device_adb.shell('wm size') # e.g.: 'Physical size: [width]x[height]'
-        screen_size = screen_size.replace('Physical size: ', '') # e.g.: '[width]x[height]'
-        screen_width, screen_height = screen_size.split(sep='x') # e.g.: ('[width]', '[height]')
-        screen_width = int(screen_width)
-        screen_height = int(screen_height)
-        _get_logger.debug(f'Done. (Screen resolution: {screen_width} x {screen_height} pixels)')
-
-        _get_logger.info(f'"{device_name}" connected.')
-
-        # Return Device object
-        return cls(device_adb=device_adb,
-                   device_id=device_id,
-                   device_name=device_name,
-                   device_host=host,
-                   device_port=port,
-                   device_screen_width=screen_width,
-                   device_screen_height=screen_height)
 
 
     # --- Helper Methods ---
