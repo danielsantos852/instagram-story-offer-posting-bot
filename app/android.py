@@ -1,4 +1,5 @@
 # --- Imports ---
+
 # Standard
 from io import BytesIO
 import logging
@@ -7,7 +8,7 @@ import sys
 import time
 
 # Third party
-import PIL
+from PIL import Image
 from ppadb.client import Client as AdbClient
 from ppadb.device import Device as AdbDevice
 import pyautogui
@@ -15,6 +16,7 @@ from pyscreeze import Box, center
 
 
 # --- Global Configuration ---
+
 # Logger setup
 logger = logging.getLogger(name=__name__)
 logger.setLevel(level=logging.INFO)
@@ -288,8 +290,8 @@ class Device:
         while True:
 
             # Use device screencap as set image
-            set_image = PIL.Image.open(fp=BytesIO(self._take_screencap()),
-                                       mode='r')
+            set_image = Image.open(fp=BytesIO(self._take_screencap()),
+                                   mode='r')
 
             # Attempt to locate subset image in set image
             attempt_counter += 1
