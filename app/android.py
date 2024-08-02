@@ -20,7 +20,7 @@ from pyscreeze import Box, center
 # Logger setup
 logger = logging.getLogger(name=__name__)
 logger.setLevel(level=logging.INFO)
-handler = logging.FileHandler(filename='./logs/android_device.log', mode='a')
+handler = logging.FileHandler(filename='./logs/log.log', mode='a')
 formatter = logging.Formatter(fmt='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(fmt=formatter)
 logger.addHandler(hdlr=handler)
@@ -52,7 +52,7 @@ pyautogui.useImageNotFoundException(True)
 # --- The Device class ---
 class Device:
 
-    # --- Magic Methods ---
+    # --- Magic methods ---
 
     # __init__
     def __init__(self,
@@ -120,7 +120,7 @@ class Device:
                f'============================================================='
 
 
-    # --- Public Methods ---
+    # --- Public methods ---
 
     # Get Device
     @classmethod
@@ -261,7 +261,7 @@ class Device:
         return None
 
 
-    # --- Helper Methods ---
+    # --- Helper methods ---
     
     # Delete Image From SD Card
     def _delete_image_from_sdcard(self, file_path:str) -> None:
