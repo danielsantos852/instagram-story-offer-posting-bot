@@ -5,11 +5,13 @@ from image import Generator
 # Main Function
 def main():
 
-    # Create new image from template
-    test_new_image_from_template('./resources/templates/story_image_720x1280_base.png')
-
-    # Save image to temp folder
-    test_save_image_as(file_path='./temp/test-image.png')
+    # Generate a fake offer image
+    Generator.create_instagram_offer_image(template_path='./resources/templates/story-720x1280-blue.png',
+                                           offer_thumbnail_path='./resources/fake/offer-thumbnail-640x640.png',
+                                           offer_title='Cool shoes',
+                                           offer_price_from=399.99,
+                                           offer_price_for=299.99,
+                                           dest_path='./temp/test-offer-image.png')
 
 
 # Test new image from template
