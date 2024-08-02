@@ -49,7 +49,7 @@ SPRITE_YOURSTORY = './resources/sprites/yourstory.png'
 pyautogui.useImageNotFoundException(True)
 
 
-# The Device class
+# --- The Device class ---
 class Device:
 
     # --- Magic Methods ---
