@@ -1,17 +1,23 @@
-# Imports
+# --- Imports ---
+
+# Standard
 from io import BytesIO
 import logging
-import PIL
-from ppadb.client import Client as AdbClient
-from ppadb.device import Device as AdbDevice
-import pyautogui
-from pyscreeze import Box, center as box_center
 import random
 import sys
 import time
 
+# Third party
+from PIL import Image
+from ppadb.client import Client as AdbClient
+from ppadb.device import Device as AdbDevice
+import pyautogui
+from pyscreeze import Box, center
 
-# Logger Configuration
+
+# --- Global Configuration ---
+
+# Logger setup
 logger = logging.getLogger(name=__name__)
 logger.setLevel(level=logging.INFO)
 handler = logging.FileHandler(filename='./logs/android_device.log', mode='a')
@@ -19,8 +25,7 @@ formatter = logging.Formatter(fmt='%(asctime)s - %(name)s - %(levelname)s - %(me
 handler.setFormatter(fmt=formatter)
 logger.addHandler(hdlr=handler)
 
-
-# Global Configuration
+# Global Variables
 DEFAULT_ADB_HOST = '127.0.0.1'
 DEFAULT_ADB_PORT = 5037
 DEFAULT_ADB_PUSH_DESTINATION_FOLDER = '/sdcard/adb-push-files/'
@@ -39,13 +44,17 @@ SPRITE_RECENTS = './resources/sprites/recents.png'
 SPRITE_SEARCHFIELD = './resources/sprites/searchfield.png'
 SPRITE_URLFIELD = './resources/sprites/urlfield.png'
 SPRITE_YOURSTORY = './resources/sprites/yourstory.png'
+
+# Pyautogui's setup
 pyautogui.useImageNotFoundException(True)
 
 
-# The Android Device class
-class AndroidDevice:
+# The Device class
+class Device:
 
-    # __init__ method
+    # --- Magic Methods ---
+
+    # __init__
     def __init__(self,
                  device_adb:AdbDevice|None,
                  device_id:str,
@@ -57,7 +66,7 @@ class AndroidDevice:
                  ) -> None:
         
         # Instance logger setup
-        self._instance_logger = logging.getLogger(__name__).getChild(self.__class__.__name__)#.getChild(str(device_id))
+        self._instance_logger = logging.getLogger(__name__).getChild(self.__class__.__name__).getChild(str(device_id))
 
         # Validate device adb object
         if not device_adb:
@@ -100,7 +109,7 @@ class AndroidDevice:
         return None
 
 
-    # __str__ method
+    # __str__
     def __str__(self) -> str:
         return f'======================== DEVICE INFO ========================\n'\
                f'device_adb:      {self.device_adb}\n'\
@@ -111,8 +120,151 @@ class AndroidDevice:
                f'============================================================='
 
 
-    # Delete Image From SD Card method
-    def delete_image_from_sdcard(self, file_path:str) -> None:
+    # --- Public Methods ---
+
+    # Get Device
+    @classmethod
+    def get(cls,
+            device_name:str = 'Generic Android Device',
+            host:str = DEFAULT_ADB_HOST, 
+            port:int = DEFAULT_ADB_PORT
+            ):
+
+        # Logger set up
+        _get_logger = logging.getLogger(__name__).getChild(cls.__name__).getChild('get')
+
+        _get_logger.info(f'Connecting to "{device_name}" at {host}:{port}...')
+
+        # Connect to adb client
+        _get_logger.debug(f'Connect to ADB client at {host}:{port} ...')
+        client = AdbClient(host=host, port=port)
+        _get_logger.debug(f'Done. (Client version: {client.version()})')
+
+        # Connect to first available adb device
+        _get_logger.debug(f'Connect to first available ADB device ...')
+        try:
+            device_adb = client.devices()[0]
+        except IndexError:
+            _get_logger.error(f'No available devices found at {host}:{port}.', exc_info=False)
+            sys.exit()
+        else:
+            device_id = device_adb.serial
+            _get_logger.debug(f'Done. (Device id: {device_id})')
+
+        # Get device's screen width and height
+        _get_logger.debug(f"Get device's screen resolution ...")
+        screen_size = device_adb.shell('wm size') # e.g.: 'Physical size: [width]x[height]'
+        screen_size = screen_size.replace('Physical size: ', '') # e.g.: '[width]x[height]'
+        screen_width, screen_height = screen_size.split(sep='x') # e.g.: ('[width]', '[height]')
+        screen_width = int(screen_width)
+        screen_height = int(screen_height)
+        _get_logger.debug(f'Done. (Screen resolution: {screen_width} x {screen_height} pixels)')
+
+        _get_logger.info(f'"{device_name}" connected.')
+
+        # Return Device object
+        return cls(device_adb=device_adb,
+                   device_id=device_id,
+                   device_name=device_name,
+                   device_host=host,
+                   device_port=port,
+                   device_screen_width=screen_width,
+                   device_screen_height=screen_height)
+
+
+    # Post Instagram Story
+    def post_instagram_story(self,
+                             post_image:str,
+                             linksticker_url:str|None = None,
+                             linksticker_custom_text:str|None = None,
+                             close_friends_only:bool = True
+                             ) -> None:
+
+        self._instance_logger.info('Posting Instagram story:')
+
+        # Push post image to device's sd card
+        self._instance_logger.info(f"Pushing post image to device's sd card...")
+        post_image = self._push_image_to_sdcard(post_image)
+
+        # Launch Instagram app
+        self._instance_logger.info("Launching Instagram App...")
+        self._launch_instagram_app(2)
+
+        # Click on "Add to story" button (blue circle with white cross)
+        self._instance_logger.info('Creating new Instagram story post...')
+        sprite_box = self._find_on_screen(SPRITE_ADDTOSTORY, '"Add to story" button', 3, 1)
+        while sprite_box:
+            self._input_screen_tap(sprite_box, 1)
+            sprite_box = self._find_on_screen(SPRITE_ADDTOSTORY, '"Add to story" button', 1, 0)
+
+        # Select post image from gallery
+        self._instance_logger.info('Selecting post image from gallery...')
+        sprite_box = self._find_on_screen(SPRITE_RECENTS, '"Recents" header')
+        self._input_screen_tap(sprite_box, 0.5, 0, 300)
+
+        # If link sticker URL provided:
+        if linksticker_url:
+            self._instance_logger.info('Adding link sticker...')
+
+            # Click on "Add a sticker"
+            sprite_box = self._find_on_screen(SPRITE_ADDSTICKER, '"Add sticker" button')
+            self._input_screen_tap(sprite_box, 0.5)
+
+            # Click on "Search" field and type "link"
+            sprite_box = self._find_on_screen(SPRITE_SEARCHFIELD, '"Search" field')
+            self._input_screen_tap(sprite_box, 0.2)
+            self._input_text('link')
+
+            # Select "LINK" sticker
+            sprite_box = self._find_on_screen(SPRITE_LINKSTICKER, '"LINK" sticker')
+            self._input_screen_tap(sprite_box, 0.1)
+
+            # Input link sticker url
+            self._input_text(linksticker_url)
+
+            # If link sticker customized text provided:
+            if linksticker_custom_text:
+
+                # Click on "Customize sticker text" and input customized text
+                sprite_box = self._find_on_screen(SPRITE_CUSTOMIZESTICKERTEXT, '"Customize sticker text" button')
+                self._input_screen_tap(sprite_box, 0.1)
+                self._input_text(linksticker_custom_text)
+
+            # Click on "Done"
+            sprite_box = self._find_on_screen(SPRITE_DONE, '"Done" button')
+            self._input_screen_tap(sprite_box, 0.5)
+
+            # Change link sticker color
+            sprite_box = self._find_on_screen(SPRITE_LINKSTICKER_BLUE, 'blue link sticker')
+            for _ in range(3):
+                self._input_screen_tap(sprite_box, 0.4)
+
+            # Drag link sticker to final position (bottom, center)
+            self._input_screen_drag_and_drop(sprite_box, 0, 920, 2000, 1)
+
+        # Post story to designated group
+        if close_friends_only:
+            self._instance_logger.info('Posting story (to Close Friends only)...')
+            sprite_box = self._find_on_screen(SPRITE_CLOSEFRIENDS, '"Close Friends" button')
+        else:
+            self._instance_logger.info('Posting story (to all followers)...')
+            sprite_box = self._find_on_screen(SPRITE_YOURSTORY, '"Your Story" button')
+        self._input_screen_tap(sprite_box, 0)
+
+        # Delete post image from device's sd card
+        self._instance_logger.info("Deleting post image from device's sd card...")
+        self._delete_image_from_sdcard(post_image)
+
+        self._instance_logger.info('Instagram story posted.')
+
+        # Return nothing
+        return None
+
+
+    # --- Helper Methods ---
+    
+    # Delete Image From SD Card
+    def _delete_image_from_sdcard(self, file_path:str) -> None:
         
         # Delete file from device's SD card
         self._instance_logger.debug(f'Delete "{file_path}" ...')
@@ -123,14 +275,14 @@ class AndroidDevice:
         return None
 
 
-    # Find On Screen method
-    def find_on_screen(self, 
-                       subset_image:str, 
-                       subset_image_name:str = 'subset_image', 
-                       max_attempts:int = 3, 
-                       time_between_attempts:int = 3,
-                       confidence_lvl:float = 0.9 
-                       ) -> Box|None:
+    # Find On Screen
+    def _find_on_screen(self, 
+                        subset_image:str, 
+                        subset_image_name:str = 'subset_image', 
+                        max_attempts:int = 3, 
+                        time_between_attempts:int = 3,
+                        confidence_lvl:float = 0.9 
+                        ) -> Box|None:
 
         # Start attempts to find image subset in image set
         subset_image_box = None
@@ -138,8 +290,8 @@ class AndroidDevice:
         while True:
 
             # Use device screencap as set image
-            set_image = PIL.Image.open(fp=BytesIO(self.take_screencap()),
-                                       mode='r')
+            set_image = Image.open(fp=BytesIO(self._take_screencap()),
+                                   mode='r')
 
             # Attempt to locate subset image in set image
             attempt_counter += 1
@@ -169,20 +321,20 @@ class AndroidDevice:
                 return subset_image_box
 
 
-    # Input Screen Drag-And-Drop method
-    def input_screen_drag_and_drop(self, 
-                                   drag_box:Box, 
-                                   dx:int, 
-                                   dy:int, 
-                                   duration:int, 
-                                   wait_time:float = 1,
-                                   centered_drag:bool=False
-                                   ) -> None:
+    # Input Screen Drag-And-Drop
+    def _input_screen_drag_and_drop(self, 
+                                    drag_box:Box, 
+                                    dx:int, 
+                                    dy:int, 
+                                    duration:int, 
+                                    wait_time:float = 1,
+                                    centered_drag:bool=False
+                                    ) -> None:
 
         # If centered drag, get drag box's center coordinates
         if centered_drag:
-            x_0 = box_center(drag_box).x
-            y_0 = box_center(drag_box).y
+            x_0 = center(drag_box).x
+            y_0 = center(drag_box).y
 
         # Else, get random coordinates inside drag box
         else:
@@ -201,8 +353,8 @@ class AndroidDevice:
         return None
 
 
-    # Input Screen Tap method
-    def input_screen_tap(self, 
+    # Input Screen Tap
+    def _input_screen_tap(self, 
                          tap_box:Box, 
                          wait_time:float = 1, 
                          x_offset:int = 0,
@@ -212,8 +364,8 @@ class AndroidDevice:
 
         # If centered tap, get tap box's center coordinates
         if centered_tap:
-            x = box_center(tap_box).x + x_offset
-            y = box_center(tap_box).y + y_offset
+            x = center(tap_box).x + x_offset
+            y = center(tap_box).y + y_offset
 
         # Else, get random coordinates inside tap box
         else:
@@ -232,8 +384,8 @@ class AndroidDevice:
         return None
 
 
-    # Input Text method
-    def input_text(self, text:str='') -> None:
+    # Input Text
+    def _input_text(self, text:str='') -> None:
 
         # Input text
         self._instance_logger.debug(f'Input text "{text}" ...')
@@ -244,11 +396,11 @@ class AndroidDevice:
         return None
 
 
-    # Launch Instagram App method
-    def launch_instagram_app(self,
-                             wait_time:float = 3,
-                             force_restart:bool = True
-                             ) -> None:
+    # Launch Instagram App
+    def _launch_instagram_app(self,
+                              wait_time:float = 3,
+                              force_restart:bool = True
+                              ) -> None:
 
         # Force-stop Instagram app if force restart required
         if force_restart==True:
@@ -268,101 +420,12 @@ class AndroidDevice:
         return None
 
 
-    # Post Instagram Story method
-    def post_instagram_story(self,
-                             post_image:str,
-                             linksticker_url:str|None = None,
-                             linksticker_custom_text:str|None = None,
-                             close_friends_only:bool = True
-                             ) -> None:
-
-        self._instance_logger.info('Posting Instagram story:')
-
-        # Push post image to device's sd card
-        self._instance_logger.info(f"Pushing post image to device's sd card...")
-        post_image = self.push_image_to_sdcard(post_image)
-
-        # Launch Instagram app
-        self._instance_logger.info("Launching Instagram App...")
-        self.launch_instagram_app(2)
-
-        # Click on "Add to story" button (blue circle with white cross)
-        self._instance_logger.info('Creating new Instagram story post...')
-        sprite_box = self.find_on_screen(SPRITE_ADDTOSTORY, '"Add to story" button', 3, 1)
-        while sprite_box:
-            self.input_screen_tap(sprite_box, 1)
-            sprite_box = self.find_on_screen(SPRITE_ADDTOSTORY, '"Add to story" button', 1, 0)
-
-        # Select post image from gallery
-        self._instance_logger.info('Selecting post image from gallery...')
-        sprite_box = self.find_on_screen(SPRITE_RECENTS, '"Recents" header')
-        self.input_screen_tap(sprite_box, 0.5, 0, 300)
-
-        # If link sticker URL provided:
-        if linksticker_url:
-            self._instance_logger.info('Adding link sticker...')
-
-            # Click on "Add a sticker"
-            sprite_box = self.find_on_screen(SPRITE_ADDSTICKER, '"Add sticker" button')
-            self.input_screen_tap(sprite_box, 0.5)
-
-            # Click on "Search" field and type "link"
-            sprite_box = self.find_on_screen(SPRITE_SEARCHFIELD, '"Search" field')
-            self.input_screen_tap(sprite_box, 0.2)
-            self.input_text('link')
-
-            # Select "LINK" sticker
-            sprite_box = self.find_on_screen(SPRITE_LINKSTICKER, '"LINK" sticker')
-            self.input_screen_tap(sprite_box, 0.1)
-
-            # Input link sticker url
-            self.input_text(linksticker_url)
-
-            # If link sticker customized text provided:
-            if linksticker_custom_text:
-
-                # Click on "Customize sticker text" and input customized text
-                sprite_box = self.find_on_screen(SPRITE_CUSTOMIZESTICKERTEXT, '"Customize sticker text" button')
-                self.input_screen_tap(sprite_box, 0.1)
-                self.input_text(linksticker_custom_text)
-
-            # Click on "Done"
-            sprite_box = self.find_on_screen(SPRITE_DONE, '"Done" button')
-            self.input_screen_tap(sprite_box, 0.5)
-
-            # Change link sticker color
-            sprite_box = self.find_on_screen(SPRITE_LINKSTICKER_BLUE, 'blue link sticker')
-            for _ in range(3):
-                self.input_screen_tap(sprite_box, 0.4)
-
-            # Drag link sticker to final position (bottom, center)
-            self.input_screen_drag_and_drop(sprite_box, 0, 920, 2000, 1)
-
-        # Post story to designated group
-        if close_friends_only:
-            self._instance_logger.info('Posting story (to Close Friends only)...')
-            sprite_box = self.find_on_screen(SPRITE_CLOSEFRIENDS, '"Close Friends" button')
-        else:
-            self._instance_logger.info('Posting story (to all followers)...')
-            sprite_box = self.find_on_screen(SPRITE_YOURSTORY, '"Your Story" button')
-        self.input_screen_tap(sprite_box, 0)
-
-        # Delete post image from device's sd card
-        self._instance_logger.info("Deleting post image from device's sd card...")
-        self.delete_image_from_sdcard(post_image)
-
-        self._instance_logger.info('Instagram story posted.')
-
-        # Return nothing
-        return None
-
-
-    # Push Image To SD Card method
-    def push_image_to_sdcard(self, 
-                             src_file_path:str, 
-                             dest_folder_path:str = DEFAULT_ADB_PUSH_DESTINATION_FOLDER,
-                             dest_file_name:str = DEFAULT_ADB_PUSH_DESTINATION_FILE_NAME 
-                             ) -> str:
+    # Push Image To SD Card
+    def _push_image_to_sdcard(self, 
+                              src_file_path:str, 
+                              dest_folder_path:str = DEFAULT_ADB_PUSH_DESTINATION_FOLDER,
+                              dest_file_name:str = DEFAULT_ADB_PUSH_DESTINATION_FILE_NAME 
+                              ) -> str:
         
         # Set destination file path
         dest_file_path = f'{dest_folder_path}{dest_file_name}'
@@ -381,8 +444,8 @@ class AndroidDevice:
         return dest_file_path
 
 
-    # Take Screencap method
-    def take_screencap(self, output_path:str|None = None) -> bytearray:
+    # Take Screencap
+    def _take_screencap(self, output_path:str|None = None) -> bytearray:
         
         # Take device screencap
         self._instance_logger.debug('Take device screencap ...')
@@ -399,47 +462,3 @@ class AndroidDevice:
         # Return screencap as bytearray
         return screencap
 
-
-# Get Android Device function
-def get_android_device(device_name:str = 'Generic Android Device',
-                       host:str = DEFAULT_ADB_HOST, 
-                       port:int = DEFAULT_ADB_PORT
-                       ) -> AndroidDevice:
-
-    logger.info(f'Connecting to "{device_name}" at {host}:{port}...')
-
-    # Connect to adb client
-    logger.debug(f'Connect to ADB client at {host}:{port} ...')
-    client = AdbClient(host=host, port=port)
-    logger.debug(f'Done. (Client version: {client.version()})')
-
-    # Connect to first available adb device
-    logger.debug(f'Connect to first available ADB device ...')
-    try:
-        device_adb = client.devices()[0]
-    except IndexError:
-        logger.error(f'No available devices found at {host}:{port}.', exc_info=False)
-        sys.exit()
-    else:
-        device_id = device_adb.serial
-        logger.debug(f'Done. (Device id: {device_id})')
-
-    # Get device's screen width and height
-    logger.debug(f"Get device's screen resolution ...")
-    screen_size = device_adb.shell('wm size') # e.g.: 'Physical size: [width]x[height]'
-    screen_size = screen_size.replace('Physical size: ', '') # e.g.: '[width]x[height]'
-    screen_width, screen_height = screen_size.split(sep='x') # e.g.: ('[width]', '[height]')
-    screen_width = int(screen_width)
-    screen_height = int(screen_height)
-    logger.debug(f'Done. (Screen resolution: {screen_width} x {screen_height} pixels)')
-
-    logger.info(f'"{device_name}" connected.')
-
-    # Return AndroidDevice object
-    return AndroidDevice(device_adb=device_adb,
-                         device_id=device_id,
-                         device_name=device_name,
-                         device_host=host,
-                         device_port=port,
-                         device_screen_width=screen_width,
-                         device_screen_height=screen_height)
