@@ -1,14 +1,16 @@
-# Imports
+# --- Imports ---
+
+# Standard
 import logging
 from textwrap import wrap
 
-import PIL
-from PIL import Image
-import PIL.ImageDraw
-import PIL.ImageFont
+# Third party
+from PIL import Image, ImageDraw, ImageFont
 
 
-# Logger configuration
+# --- Global configuration ---
+
+# Logger setup
 logger = logging.getLogger(name=__name__)
 logger.setLevel(level=logging.DEBUG)
 handler = logging.FileHandler(filename='./logs/android_device.log', mode='a')
@@ -23,7 +25,7 @@ DEFAULT_FONT_SIZE = 10
 DEFAULT_IMAGE_OUTPUT_PATH = './temp/image.png'
 
 
-# The Generator class:
+# --- The Generator class ---
 class Generator:
 
     # Class logger setup
@@ -143,12 +145,12 @@ class Generator:
                         ) -> None:
         
         # Set the font
-        text_font = PIL.ImageFont.truetype(font=font_path,
-                                           size=font_size,
-                                           encoding='unic')
+        text_font = ImageFont.truetype(font=font_path,
+                                       size=font_size,
+                                       encoding='unic')
 
         # Add textbox to offer image
-        draw = PIL.ImageDraw.Draw(im=cls._current_image)
+        draw = ImageDraw.Draw(im=cls._current_image)
         draw.multiline_text(xy=(x, y),
                             text=text,
                             fill=(0, 0, 0),
