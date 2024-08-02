@@ -13,7 +13,7 @@ from PIL import Image, ImageDraw, ImageFont
 # Logger setup
 logger = logging.getLogger(name=__name__)
 logger.setLevel(level=logging.DEBUG)
-handler = logging.FileHandler(filename='./logs/android_device.log', mode='a')
+handler = logging.FileHandler(filename='./logs/log.log', mode='a')
 formatter = logging.Formatter(fmt='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(fmt=formatter)
 logger.addHandler(hdlr=handler)
@@ -33,7 +33,7 @@ class Generator:
     _class_logger.info('Class logger set up.')
 
 
-    # --- Public Methods ---
+    # --- Public methods ---
 
     # Create Instagram offer image
     @classmethod
@@ -74,7 +74,7 @@ class Generator:
         return cls._save_image_as(dest_path=dest_path)        
 
 
-    # --- Helper Methods ---
+    # --- Helper methods ---
 
     # Add offer price
     @classmethod
