@@ -51,6 +51,7 @@ pyautogui.useImageNotFoundException(True)
 class Device:
 
     # --- Magic Methods ---
+
     # __init__
     def __init__(self,
                  device_adb:AdbDevice|None,
@@ -118,6 +119,7 @@ class Device:
 
 
     # --- Public Methods ---
+
     # Get Device
     @classmethod
     def get(cls,
@@ -258,6 +260,7 @@ class Device:
 
 
     # --- Helper Methods ---
+    
     # Delete Image From SD Card
     def _delete_image_from_sdcard(self, file_path:str) -> None:
         
