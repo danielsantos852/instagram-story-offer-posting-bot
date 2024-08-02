@@ -6,7 +6,7 @@ from image import Generator
 def main():
 
     # Generate a fake offer image
-    Generator.create_instagram_offer_image(template_path='./resources/templates/story-720x1280-blue.png',
+    Generator.create_instagram_offer_image(template_path='./resources/templates/story-720x1280-gray-white.png',
                                            offer_thumbnail_path='./resources/fake/offer-thumbnail-640x640.png',
                                            offer_title='Cool shoes',
                                            offer_price_from=399.99,
