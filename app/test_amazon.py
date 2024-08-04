@@ -7,14 +7,14 @@ from amazon import Scraper
 # --- Main Function ---
 def main():
     
-    test_new_offers_table()
+    ...
 
 
-# Test new offers table
-def test_new_offers_table():
-    
-    # Create new offers table
-    Scraper.new_offers_table()
+# Test reset input text file
+def test_reset_input_txt():
+
+    # Reset input text file
+    Scraper.reset_input_txt()
 
     # Return nothing
     return None
