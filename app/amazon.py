@@ -3,8 +3,6 @@
 # Standard
 import logging
 
-# Third party
-import pandas as pd
 
 # --- Global configuration ---
 
@@ -17,30 +15,33 @@ handler.setFormatter(fmt=formatter)
 logger.addHandler(hdlr=handler)
 
 # Global variables
-DEFAULT_OFFERS_TABLE_DATA = {"sitestripe_url":[]}
-DEFAULT_OFFERS_TABLE_OUTPUT_PATH = './offers/offers.xlsx'
-DEFAULT_OFFERS_TABLE_SHEET_NAME = 'offers'
+DEFAULT_INPUT_TXT_PATH = './offers/paste-urls-inside-this-file.txt'
+DEFAULT_INPUT_TXT_CONTENT = "Paste a single url per line, no more, no less.\n"
 
 
 # --- The Scraper class ---
 class Scraper:
 
-    # New offers spreadsheet (empty, for human to fill manually)
+    # Reset offer input txt file
     @classmethod
-    def new_offers_table(cls, 
-                         output_path:str = DEFAULT_OFFERS_TABLE_OUTPUT_PATH
-                         ) -> str:
+    def reset_input_txt(cls,
+                        input_txt_path:str = DEFAULT_INPUT_TXT_PATH,
+                        input_txt_content:str = DEFAULT_INPUT_TXT_CONTENT
+                        ) -> str:
+
+        # Create/Overwrite input txt file
+        with open(file=input_txt_path, mode='w') as file:
+            
+            # Rewrite input txt content
+            file.write(input_txt_content)
+
+        # Return path to input txt file
+        return input_txt_path
+
+
+    # Scrape amazon offer
+    @classmethod
+    def scrape_amazon_offer(cls, offer_url):
         
-        # Create new dataframe from template
-        offers_spreadsheet = pd.DataFrame(data=DEFAULT_OFFERS_TABLE_DATA)
-        
-        # Save dataframe as Excel file
-        offers_spreadsheet.to_excel(output_path,
-                                    sheet_name=DEFAULT_OFFERS_TABLE_SHEET_NAME,
-                                    index=False)
+        ...
 
-        # Return output file path
-        return output_path
-
-
-    # Scrape amazon offers
