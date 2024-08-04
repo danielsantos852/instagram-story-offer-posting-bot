@@ -1,5 +1,5 @@
 # Imports
-from app.android import Device as AndroidDevice
+from android import Device as AndroidDevice
 
 
 # The Main function
