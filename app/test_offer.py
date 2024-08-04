@@ -1,7 +1,7 @@
 # --- Imports ---
 
 # Local
-from amazon import Scraper
+from offer import Scraper
 
 
 # --- Main Function ---
