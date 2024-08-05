@@ -1,36 +1,27 @@
 # --- Imports ---
 
-# Standard
-import os
-import sys
-
 # Local
-from offer import Scraper as OfferScrapper
-from image import Generator as ImageGenerator
-from android import Device as AndroidDevice
+from pipeline import Pipeline
 
 
 # --- Global configuration ---
 
 # Global variables
-INPUT_TXT_PATH = './offers/input.txt'
+INPUT_TXT_FILE_PATH = './offers/input.txt'
+VALID_URL_PREFIXES = ['https://amzn.to/', 
+                      'https://www.amazon.com.br/']
 
 
 # --- Main Function ---
+
 def main():
 
-    # If no input txt file, respawn it and exit program
-    if not os.path.exists(path=INPUT_TXT_PATH):
-        OfferScrapper.new_txt_file(path=INPUT_TXT_PATH)
-        sys.exit(f'File "{INPUT_TXT_PATH}" not found, respawned. Run program again.')
-    
-    # Extract a valid offer url from input txt
+    # Get pipeline object
+    pipeline = Pipeline.get(input_txt_file_path=INPUT_TXT_FILE_PATH,
+                            valid_url_prefixes=VALID_URL_PREFIXES)
 
-    # Scrape offer data
-
-    # Generate offer image
-
-    # Post offer image
+    # Run pipeline
+    pipeline.run()
 
 
 # Call main()
