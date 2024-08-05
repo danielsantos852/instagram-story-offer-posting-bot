@@ -1,29 +1,36 @@
 # --- Imports ---
 
+# Standard
+import os
+import sys
+
 # Local
-from android import Device as AndroidDevice
+from offer import Scraper as OfferScrapper
 from image import Generator as ImageGenerator
+from android import Device as AndroidDevice
+
+
+# --- Global configuration ---
+
+# Global variables
+INPUT_TXT_PATH = './offers/input.txt'
 
 
 # --- Main Function ---
 def main():
+
+    # If no input txt file, respawn it and exit program
+    if not os.path.exists(path=INPUT_TXT_PATH):
+        OfferScrapper.new_txt_file(path=INPUT_TXT_PATH)
+        sys.exit(f'File "{INPUT_TXT_PATH}" not found, respawned. Run program again.')
     
-    # Connect to an Android device
-    phone = AndroidDevice.get(device_name='Poco X3 NFC')
+    # Extract a valid offer url from input txt
 
-    # Generate Instagram offer image
-    ImageGenerator.create_instagram_offer_image(template_path='./resources/templates/story-720x1280-gray-white.png',
-                                                offer_thumbnail_path='./resources/fake/offer-thumbnail-640x640.png',
-                                                offer_title=f'Cool Shoes',
-                                                offer_price_from=399,
-                                                offer_price_for=299,
-                                                dest_path=f'./temp/test-instagram-offer-image.png')
+    # Scrape offer data
 
-    # Post offer image on Instagram
-    phone.post_instagram_story(post_image=f'./temp/test-instagram-offer-image.png',
-                               linksticker_url='www.google.com',
-                               linksticker_custom_text=f'ver oferta',
-                               close_friends_only=True)
+    # Generate offer image
+
+    # Post offer image
 
 
 # Call main()
