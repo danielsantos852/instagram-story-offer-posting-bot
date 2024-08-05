@@ -31,10 +31,12 @@ class Pipeline:
     # __init__
     def __init__(self,
                  input_txt_file_path:str,
-                 valid_url_prefixes:list
+                 valid_url_prefixes:list,
+                 input_txt_default_content:str
                  ) -> None:
         
         # Set object variables
+        self.input_txt_default_content = input_txt_default_content
         self.input_txt_file_path = input_txt_file_path
         self.valid_url_prefixes = valid_url_prefixes
 
@@ -49,12 +51,13 @@ class Pipeline:
     def get(cls,
             input_txt_file_path:str = DEFAULT_INPUT_TXT_FILE_PATH,
             valid_url_prefixes:list = DEFAULT_VALID_URL_PREFIXES,
-            default_input_txt_file_content:str = DEFAULT_INPUT_TXT_FILE_CONTENT
+            input_txt_default_content:str = DEFAULT_INPUT_TXT_FILE_CONTENT
             ):
 
         # Return Pipeline object        
         return Pipeline(input_txt_file_path=input_txt_file_path,
-                        valid_url_prefixes=valid_url_prefixes)
+                        valid_url_prefixes=valid_url_prefixes,
+                        input_txt_default_content=input_txt_default_content)
 
 
     # Run pipeline
