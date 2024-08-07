@@ -2,7 +2,7 @@
 from android import Device as AndroidDevice
 
 
-# The Main function
+# Main function
 def main():
     
     # Get Android device
