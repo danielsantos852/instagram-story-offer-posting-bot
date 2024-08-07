@@ -62,7 +62,7 @@ class Device:
                  device_id:str,
                  device_screen_width:int,
                  device_screen_height:int,
-                 device_name:str,
+                 device_name:str
                  ):
         
         # Instance logger setup
@@ -113,7 +113,7 @@ class Device:
         return f'------------------------ Device Info ------------------------\n'\
                f'Name:              {self.device_name}\n'\
                f'Serial:            {self.device_id}\n'\
-               f'Screen resolution: {self.device_screen_width} x {self.device_screen_height} pixels\n'\
+               f'Screen resolution: {self.device_screen_width} by {self.device_screen_height} pixels\n'\
                f'Client address:    {self.client_ip}:{self.client_port}\n'\
                f'ppadb object:      {self.device_adb}\n'\
                f'-------------------------------------------------------------'
@@ -124,7 +124,7 @@ class Device:
     @classmethod
     def get(cls,
             device_name:str = 'Android phone',
-            client_ip:str = DEFAULT_ADB_CLIENT_IP, 
+            client_ip:str = DEFAULT_ADB_CLIENT_IP,
             listen_port:int = DEFAULT_ADB_LISTEN_PORT
             ):
 
@@ -290,12 +290,12 @@ class Device:
 
 
     # Find on screen
-    def _find_on_screen(self, 
-                        search_image:str, 
-                        search_image_name:str = 'search_image', 
-                        max_attempts:int = 3, 
+    def _find_on_screen(self,
+                        search_image:str,
+                        search_image_name:str = 'search_image',
+                        max_attempts:int = 3,
                         time_between_attempts:int = 3,
-                        confidence_lvl:float = 0.9 
+                        confidence_lvl:float = 0.9
                         ) -> Box|None:
         """
         Locates an image on device screen.
@@ -344,11 +344,11 @@ class Device:
 
 
     # Input screen drag-and-drop
-    def _input_screen_drag_and_drop(self, 
-                                    drag_box:Box, 
-                                    dx:int, 
-                                    dy:int, 
-                                    duration:int, 
+    def _input_screen_drag_and_drop(self,
+                                    drag_box:Box,
+                                    dx:int,
+                                    dy:int,
+                                    duration:int,
                                     wait_time:float = 1,
                                     centered_drag:bool=False
                                     ) -> None:
@@ -383,9 +383,9 @@ class Device:
 
 
     # Input screen tap
-    def _input_screen_tap(self, 
-                          tap_box:Box, 
-                          wait_time:float = 1, 
+    def _input_screen_tap(self,
+                          tap_box:Box,
+                          wait_time:float = 1,
                           x_offset:int = 0,
                           y_offset:int = 0,
                           centered_tap:bool = False
@@ -450,10 +450,10 @@ class Device:
 
 
     # Push image to SD card
-    def _push_image_to_sdcard(self, 
-                              src_file_path:str, 
+    def _push_image_to_sdcard(self,
+                              src_file_path:str,
                               dest_folder_path:str = DEFAULT_ADB_PUSH_DESTINATION_FOLDER,
-                              dest_file_name:str = DEFAULT_ADB_PUSH_DESTINATION_FILE_NAME 
+                              dest_file_name:str = DEFAULT_ADB_PUSH_DESTINATION_FILE_NAME
                               ) -> str:
         
         # Set destination file path
@@ -474,7 +474,7 @@ class Device:
 
 
     # Sleep
-    def _sleep(self, wait_time):
+    def _sleep(self, wait_time:float) -> None:
         
         # Sleep for some time
         self._logger.debug(f'Sleeping for {wait_time} seconds...')
