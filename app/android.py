@@ -473,6 +473,18 @@ class Device:
         return dest_file_path
 
 
+    # Sleep
+    def _sleep(self, wait_time):
+        
+        # Sleep for some time
+        self._logger.debug(f'Sleeping for {wait_time} seconds...')
+        sleep(wait_time)
+        self._logger.debug(f'Slept for {wait_time} seconds.')
+
+        # Return nothing
+        return None
+
+
     # Take screencap
     def _take_screencap(self, output_path:str|None = None) -> bytearray:
         
@@ -491,14 +503,3 @@ class Device:
         # Return screencap as bytearray
         return screencap
 
-
-    # Sleep
-    def _sleep(self, wait_time):
-        
-        # Sleep for some time
-        self._logger.debug(f'Sleeping for {wait_time} seconds...')
-        sleep(wait_time)
-        self._logger.debug(f'Slept for {wait_time} seconds.')
-
-        # Return nothing
-        return None
