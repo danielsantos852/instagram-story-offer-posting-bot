@@ -10,5 +10,8 @@
 # Ignore contents of "logs" folder
 /logs/*
 
+# Ignore contents of "offers" folder
+/offers/*
+
 # Ignore contents of "temp" folder
 /temp/*
