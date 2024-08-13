@@ -28,8 +28,8 @@ logger.addHandler(hdlr=handler)
 # Global Variables
 DEFAULT_ADB_CLIENT_IP = '127.0.0.1'
 DEFAULT_ADB_LISTEN_PORT = 5037
-DEFAULT_ADB_PUSH_DESTINATION_FOLDER = '/sdcard/adb-push-files/'
-DEFAULT_ADB_PUSH_DESTINATION_FILE_NAME = 'image.png'
+DEFAULT_ADB_PUSH_DEST_FILE_NAME = 'image.png'
+DEFAULT_ADB_PUSH_DEST_FOLDER = '/sdcard/adb-push-files/'
 SPRITE_ADDSTICKER = './resources/sprites/addsticker.png'
 SPRITE_ADDTOSTORY = './resources/sprites/addtostory.png'
 SPRITE_CLOSEFRIENDS = './resources/sprites/closefriends.png'
@@ -179,12 +179,16 @@ class Device:
                              linksticker_url:str|None = None,
                              linksticker_custom_text:str|None = None,
                              close_friends_only:bool = True,
-                             test_call:bool = False
+                             test_call:bool = False,
+                             adb_push_dest_file_name:str = DEFAULT_ADB_PUSH_DEST_FILE_NAME,
+                             adb_push_dest_folder:str = DEFAULT_ADB_PUSH_DEST_FOLDER
                              ) -> None:
 
         # Push post image to device's sd card
         self._logger.info(f'Pushing post image to device SD card...')
-        post_image = self._push_image_to_sdcard(post_image)
+        post_image = self._push_image_to_sdcard(src_file_path=post_image,
+                                                dest_file_name=adb_push_dest_file_name,
+                                                dest_folder=adb_push_dest_folder)
         self._logger.info(f'Pushed post image to device SD card.')
 
         # Launch Instagram app
@@ -206,7 +210,7 @@ class Device:
         self._input_screen_tap(sprite_box, 0.5, 0, 300)
         self._logger.info('Selected post image from gallery.')
 
-        # If link sticker URL provided:
+        # If link sticker url provided:
         if linksticker_url:
 
             # Click on "Add a sticker"
@@ -452,12 +456,12 @@ class Device:
     # Push image to SD card
     def _push_image_to_sdcard(self,
                               src_file_path:str,
-                              dest_folder_path:str = DEFAULT_ADB_PUSH_DESTINATION_FOLDER,
-                              dest_file_name:str = DEFAULT_ADB_PUSH_DESTINATION_FILE_NAME
+                              dest_file_name:str,
+                              dest_folder:str
                               ) -> str:
         
         # Set destination file path
-        dest_file_path = f'{dest_folder_path}{dest_file_name}'
+        dest_file_path = f'{dest_folder}{dest_file_name}'
 
         # Push file from host machine to android device
         self._logger.debug(f'Pushing file "{src_file_path}" to "{dest_file_path}"...')
