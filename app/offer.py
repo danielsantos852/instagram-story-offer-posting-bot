@@ -2,7 +2,6 @@
 
 # Standard
 import logging
-from urllib import request
 
 # --- Global Configuration ---
 
