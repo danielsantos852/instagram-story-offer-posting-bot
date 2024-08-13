@@ -127,6 +127,7 @@ class Device:
             client_ip:str = DEFAULT_ADB_CLIENT_IP,
             listen_port:int = DEFAULT_ADB_LISTEN_PORT
             ):
+        # TODO Add a docstring
 
         # Logger set up
         _get_logger = logging.getLogger(__name__).getChild(cls.__name__).getChild('get')
@@ -183,6 +184,7 @@ class Device:
                              adb_push_dest_file_name:str = DEFAULT_ADB_PUSH_DEST_FILE_NAME,
                              adb_push_dest_folder:str = DEFAULT_ADB_PUSH_DEST_FOLDER
                              ) -> None:
+        # TODO Add a docstring
 
         # Push post image to device's sd card
         self._logger.info(f'Pushing post image to device SD card...')
@@ -283,6 +285,7 @@ class Device:
     
     # Delete image from SD card
     def _delete_image_from_sdcard(self, file_path:str) -> None:
+        # TODO Add a docstring
         
         # Delete file from device's SD card
         self._logger.debug(f'Deleting "{file_path}"...')
@@ -301,11 +304,12 @@ class Device:
                         time_between_attempts:int = 3,
                         confidence_lvl:float = 0.9
                         ) -> Box|None:
+        # TODO Improve this docstring
         """
         Locates an image on device screen.
         Returns a pyscreeze.Box object with image location; or None, if not found.
         """
-        
+
         # Start attempts to find search image
         search_image_box = None
         attempt_counter = 0
@@ -356,6 +360,7 @@ class Device:
                                     wait_time:float = 1,
                                     centered_drag:bool=False
                                     ) -> None:
+        # TODO Add a docstring
 
         # If centered drag, get drag box's center coordinates
         if centered_drag:
@@ -394,6 +399,7 @@ class Device:
                           y_offset:int = 0,
                           centered_tap:bool = False
                           ) -> None:
+        # TODO Add a docstring
 
         # If centered tap, get tap box's center coordinates
         if centered_tap:
@@ -419,6 +425,7 @@ class Device:
 
     # Input text
     def _input_text(self, text:str='') -> None:
+        # TODO Add a docstring
 
         # Input text
         self._logger.debug(f'Inputting "{text}"...')
@@ -434,6 +441,7 @@ class Device:
                               wait_time:float = 3,
                               force_restart:bool = True
                               ) -> None:
+        # TODO Add a docstring
 
         # Force-stop Instagram app if required
         if force_restart==True:
@@ -459,6 +467,7 @@ class Device:
                               dest_file_name:str,
                               dest_folder:str
                               ) -> str:
+        # TODO Add a docstring
         
         # Set destination file path
         dest_file_path = f'{dest_folder}{dest_file_name}'
@@ -479,6 +488,7 @@ class Device:
 
     # Sleep
     def _sleep(self, wait_time:float) -> None:
+        # TODO Add a docstring
         
         # Sleep for some time
         self._logger.debug(f'Sleeping for {wait_time} seconds...')
@@ -491,6 +501,7 @@ class Device:
 
     # Take screencap
     def _take_screencap(self, output_path:str|None = None) -> bytearray:
+        # TODO Add a docstring
         
         # Take device screencap
         self._logger.debug('Taking device screencap...')

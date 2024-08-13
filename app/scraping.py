@@ -49,7 +49,8 @@ class Scraper:
     # Get Scraper object
     @classmethod
     def get(cls):
-        
+        # TODO Add a docstring
+
         # Return Scraper object
         logger.info('Getting Scraper object...')
         return Scraper()
@@ -61,6 +62,7 @@ class Scraper:
                             thumbnail_dest_file_name:str = DEFAULT_THUMBNAIL_DEST_FILE_NAME,
                             thumbnail_dest_folder:str = DEFAULT_THUMBNAIL_DEST_FOLDER
                             ) -> Offer:
+        # TODO Add a docstring
 
         # Create a web driver
         self._logger.info('Creating webdriver...')
@@ -138,6 +140,7 @@ class Scraper:
 
     # Create webdriver
     def _create_webdriver(self):
+        # TODO Add a docstring
 
         # Set Chrome webdriver options and start it
         options = webdriver.ChromeOptions()
@@ -157,6 +160,7 @@ class Scraper:
     # Delete webdriver
     def _delete_webdriver(self, 
                           driver:webdriver.Chrome|None = None):
+        # TODO Add a docstring
 
         # If external driver passed, close it
         if driver:

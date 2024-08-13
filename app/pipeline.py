@@ -113,6 +113,7 @@ class Pipeline:
             post_img_output_folder:str = DEFAULT_POST_IMG_OUTPUT_FOLDER,
             ig_link_sticker_text:str = DEFAULT_IG_LINK_STICKER_TEXT
             ):
+        # TODO Add a docstring
 
         # Return Pipeline object
         logger.info('Getting Pipeline object...')
@@ -128,6 +129,7 @@ class Pipeline:
 
     # Run pipeline
     def run(self):
+        # TODO Add a docstring
         
         self._logger.info('Starting pipeline...')
 
@@ -196,6 +198,7 @@ class Pipeline:
                                 create_if_not_found:bool = True,
                                 input_txt_default_content:str = ''
                                 ) -> int:
+        # TODO Add a docstring
 
         # If file exists, return status 0
         if os.path.exists(self.input_txt_file_path):
@@ -223,6 +226,7 @@ class Pipeline:
                           content:str = '',
                           urls:list = []
                           ) -> str:
+        # TODO Add a docstring
 
         # If urls list provided, add urls to content
         if len(urls) > 0:
@@ -243,6 +247,7 @@ class Pipeline:
 
     # Parse input.txt
     def _parse_input_txt(self) -> list:
+        # TODO Add a docstring
 
         # Read input.txt lines to memory
         with open(self.input_txt_file_path, 'r') as file:
