@@ -93,7 +93,7 @@ class Scraper:
         # Get "now" price
         self._logger.info('Getting offer "now" price...')
         element = self.driver.find_element(by=By.ID, value='corePriceDisplay_desktop_feature_div')
-        price_whole = element.find_element(by=By.CLASS_NAME, value='a-price-whole').text.strip()
+        price_whole = element.find_element(by=By.CLASS_NAME, value='a-price-whole').text.replace('.','').strip()
         price_fraction = element.find_element(by=By.CLASS_NAME, value='a-price-fraction').text.strip()
         offer_price_now = float(f'{price_whole}.{price_fraction}')
         self._logger.debug(f'offer_price_now = {offer_price_now}')
@@ -103,7 +103,7 @@ class Scraper:
             self._logger.info('Getting offer "before" price...')
             _ = element.find_element(by=By.CLASS_NAME, value='a-spacing-small')
             _ = _.find_element(by=By.CLASS_NAME, value='a-text-price').text
-            offer_price_before = float(_.replace('R$','').replace(',','.'))
+            offer_price_before = float(_.replace('R$','').replace('.','').replace(',','.'))
             self._logger.debug(f'offer_price_before = {offer_price_before}')
         except NoSuchElementException:
             offer_price_before = None
