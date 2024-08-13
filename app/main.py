@@ -4,21 +4,12 @@
 from pipeline import Pipeline
 
 
-# --- Global configuration ---
-
-# Global variables
-INPUT_TXT_FILE_PATH = './offers/input.txt'
-VALID_URL_PREFIXES = ['https://amzn.to/', 
-                      'https://www.amazon.com.br/']
-
-
 # --- Main Function ---
 
 def main():
 
-    # Get pipeline object
-    pipeline = Pipeline.get(input_txt_file_path=INPUT_TXT_FILE_PATH,
-                            valid_url_prefixes=VALID_URL_PREFIXES)
+    # Get pipeline
+    pipeline = Pipeline.get()
 
     # Run pipeline
     pipeline.run()
