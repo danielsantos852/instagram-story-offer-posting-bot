@@ -59,6 +59,7 @@ class Generator:
     def get(cls, 
             ig_post_template_path:str = DEFAULT_IG_POST_TEMPLATE_PATH
             ):
+        # TODO Add a docstring
 
         # Return Generator object
         logger.info('Getting Generator object...')
@@ -71,12 +72,14 @@ class Generator:
                              output_file_name:str = DEFAULT_OUTPUT_FILE_NAME,
                              output_file_folder:str = DEFAULT_OUTPUT_FILE_FOLDER
                              ) -> str:
+        # TODO Add a docstring
 
         # Create new offer image from template
         self._logger.info('Creating new post image from template...')
         self._new_image_from_template()
 
         # Add offer thumbnail to post image
+        # FIXME Make this resize thumbnails while keeping aspect ratio
         self._logger.info('Adding offer thumbnail to post image...')
         self._paste(source_path=offer.thumbnail,
                     x=40,
@@ -122,7 +125,8 @@ class Generator:
                          font_size:float = DEFAULT_FONT_SIZE,
                          text_align:str = 'left'
                          ) -> None:
-        
+        # TODO Add a docstring
+
         # Prepare price text
         if not price_before:
             price_text = f'Por apenas R$ {f'{price_now:.2f}'.replace('.',',')}'
@@ -149,7 +153,8 @@ class Generator:
                          font_size:float = DEFAULT_FONT_SIZE,
                          text_align:str = 'left'
                          ) -> None:
-        
+        # TODO Add a docstring
+
         # Clip offer title if it exceeds max length
         self._logger.debug(f'Clipping offer title "{title}" '\
                            f'to max length ({title_max_length})...')
@@ -182,6 +187,7 @@ class Generator:
                         text_align:str = 'left',
                         font_path:str = DEFAULT_FONT_PATH,
                         ) -> None:
+        # TODO Add a docstring
         
         # Set the font
         text_font = ImageFont.truetype(font=font_path,
@@ -206,7 +212,8 @@ class Generator:
 
     # New image from template
     def _new_image_from_template(self) -> None:
-        
+        # TODO Add a docstring
+
         # Create new PIL Image from template
         new_image = Image.open(self.ig_post_template_path)
 
@@ -225,7 +232,8 @@ class Generator:
                width:int,
                heigth:int
                ) -> None:
-        
+        # TODO Add a docstring
+
         # Load source image as PIL Image
         im_src = Image.open(fp=source_path)
 
@@ -244,6 +252,7 @@ class Generator:
                        output_file_name:str = DEFAULT_OUTPUT_FILE_NAME,
                        output_file_folder:str = DEFAULT_OUTPUT_FILE_FOLDER,
                        ) -> str:
+        # TODO Add a docstring
 
         # Set destination path
         output_file_path = f'{output_file_folder}{output_file_name}'

@@ -2,7 +2,6 @@
 
 # Standard
 import logging
-from urllib import request
 
 # --- Global Configuration ---
 
@@ -83,6 +82,7 @@ class Offer:
             price_before:float|None,
             discount_rate:float|None
             ):
+        # TODO Add a docstring
 
         # Return Offer object
         logger.debug('Getting Offer object...')
