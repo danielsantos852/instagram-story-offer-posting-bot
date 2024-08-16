@@ -15,11 +15,11 @@ def main():
 # Get fake offer
 def get_fake_offer() -> Offer:
     return Offer.get(url='www.google.com',
-                     title='Smiles Nike Tim Sprite',
-                     product_thumbnail='./resources/testing/product-thumbnail-640x640.png',
-                     price_now=8888.88,
+                     name='Novo tênis Fancy Pro V2 Vintage Kombi Juntos e Shallow Now TODOS OS TAMANHOS',
+                     thumbnail='./resources/testing/product-thumbnail-640x640.png',
+                     price_now=9999.99,
                      price_before=9999.99,
-                     discount_rate=0.1111)
+                     discount=0.99)
 
 
 # Test Offer.get_price()
@@ -37,18 +37,18 @@ def test_get_price():
     print(f'price_before_str = {price_before_str}')
 
 
-# Test Offer.get_discount_rate()
+# Test Offer.get_discount()
 def test_get_discount():
 
     # Create fake offer
     offer = get_fake_offer()
 
     # Get discount rate as float
-    discount_float = offer.get_discount_rate(False)
+    discount_float = offer.get_discount(False)
     print(f'discount_float = {discount_float}')
 
     # Get discount rate as str
-    discount_str = offer.get_discount_rate(True)
+    discount_str = offer.get_discount(True)
     print(f'discount_str = {discount_str}')
 
 
