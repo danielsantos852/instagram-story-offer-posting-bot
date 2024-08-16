@@ -22,52 +22,48 @@ class Offer:
     # __init__
     def __init__(self,
                  url:str,
-                 title:str,
+                 name:str,
                  thumbnail:str,
                  price_now:float,
                  price_before:float|None,
-                 discount_rate:float|None,
+                 discount:float|None,
                  ):
 
         # Instance logger setup
         self._logger = logging.getLogger(__name__)\
                               .getChild(self.__class__.__name__)
 
-        # Validate offer url
+        # Validate url
         if not url:
             raise ValueError("Missing offer url.")
 
-        # Validate offer name
-        if not title:
-            raise ValueError("Missing offer title.")
+        # Validate name
+        if not name:
+            raise ValueError("Missing offer name.")
 
-        # Validate offer thumbnail
+        # Validate thumbnail
         if not thumbnail:
             raise ValueError("Missing offer thumbnail.")
 
-        # Validate offer "now" price
-        if not price_now:
-            raise ValueError('Missing offer "now" price.')
-
-        # Set object attributes
+        # Set instance attributes
         self.url = url
-        self.title = title
+        self.name = name
         self.thumbnail = thumbnail
         self.price_now = price_now
         self.price_before = price_before
-        self.discount_rate = discount_rate
+        self.discount = discount
 
 
     # __str__
     def __str__(self) -> str:
-        return f'------------------------ Offer Info ------------------------\n'\
-               f'URL:            {self.url}\n'\
-               f'Title:          {self.title}\n'\
-               f'Thumbnail:      {self.thumbnail}\n'\
-               f'"Now" price:    {self.price_now}\n'\
-               f'"Before" price: {self.price_before}\n'\
-               f'Discount rate:  {self.discount_rate}\n'\
-               f'------------------------------------------------------------'
+        return f' --- Offer info ---\n'\
+               f'url = {self.url}\n'\
+               f'name = {self.name}\n'\
+               f'thumbnail = {self.thumbnail}\n'\
+               f'price_now = {self.price_now}\n'\
+               f'price_before = {self.price_before}\n'\
+               f'discount = {self.discount}\n'\
+               f' ------------------'
 
 
     # --- Public methods ---
@@ -76,20 +72,58 @@ class Offer:
     @classmethod
     def get(cls,
             url:str,
-            title:str,
+            name:str,
             thumbnail:str,
             price_now:float,
             price_before:float|None,
-            discount_rate:float|None
+            discount:float|None
             ):
         # TODO Add a docstring
 
         # Return Offer object
         logger.debug('Getting Offer object...')
         return Offer(url=url,
-                     title=title,
+                     name=name,
                      thumbnail=thumbnail,
                      price_now=price_now,
                      price_before=price_before,
-                     discount_rate=discount_rate)
+                     discount=discount)
+
+
+    # Get discount (as float or str)
+    def get_discount(self, as_str:bool = True) -> float|str:
+        # TODO Add a docstring
+        if not as_str:
+            return self.discount
+        else:
+            discount = self.discount       # 1.00
+            discount = f'{(discount*100):.0f}%' # "100%"
+        return discount
+
+
+    # Get ("now" or "before") price (as float or str)
+    def get_price(self, 
+                  now_or_before:str = 'now', 
+                  as_str:bool = True
+                  ) -> float|str:
+        # TODO Add a docstring
+
+        # Get specified price ("now" or "before")
+        if now_or_before == 'now':
+            price = self.price_now
+        elif now_or_before == 'before':
+            price = self.price_before
+        else:
+            raise ValueError(f'Invalid now_or_before value: '\
+                             f'must be "now" or "before", '\
+                             f'not {now_or_before}.')
+
+        # Return price (as float or as str)
+        if not as_str:
+            return price                                # 0000.00
+        else:
+            price = f'{price:.2f}'.replace('.',',')     # "0000,00"
+            if len(price.split(',')[0]) > 3:
+                price = f'{price[:-6]}.{price[-6:]}'    # "0.000,00"
+            return price
 
