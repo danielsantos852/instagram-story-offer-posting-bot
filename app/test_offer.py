@@ -1,0 +1,56 @@
+# Imports
+from offer import Offer
+
+
+# Main function
+def main():
+    
+    # Test Offer.get_price()
+    test_get_price()
+
+    # Test Offer.get_discount()
+    test_get_discount()
+
+
+# Get fake offer
+def get_fake_offer() -> Offer:
+    return Offer.get(url='www.google.com',
+                     title='Smiles Nike Tim Sprite',
+                     product_thumbnail='./resources/testing/product-thumbnail-640x640.png',
+                     price_now=8888.88,
+                     price_before=9999.99,
+                     discount_rate=0.1111)
+
+
+# Test Offer.get_price()
+def test_get_price():
+    
+    # Create fake offer
+    offer = get_fake_offer()
+
+    # Get "now" price as float
+    price_now_float = offer.get_price('now', False)
+    print(f'price_now_float = {price_now_float}')
+
+    # Get "before" price as str
+    price_before_str = offer.get_price('before', True)
+    print(f'price_before_str = {price_before_str}')
+
+
+# Test Offer.get_discount_rate()
+def test_get_discount():
+
+    # Create fake offer
+    offer = get_fake_offer()
+
+    # Get discount rate as float
+    discount_float = offer.get_discount_rate(False)
+    print(f'discount_float = {discount_float}')
+
+    # Get discount rate as str
+    discount_str = offer.get_discount_rate(True)
+    print(f'discount_str = {discount_str}')
+
+
+# Call main function
+if __name__=='__main__': main()
