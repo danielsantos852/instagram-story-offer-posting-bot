@@ -1,18 +1,18 @@
 # --- Imports ---
 
 # Local
-from pipeline import Pipeline
+from bot import Bot
 
 
 # --- Main Function ---
 
 def main():
 
-    # Get pipeline
-    pipeline = Pipeline.get()
+    # Get bot
+    bot = Bot.get()
 
-    # Run pipeline
-    pipeline.run()
+    # Run bot
+    bot.run()
 
 
 # Call main()
