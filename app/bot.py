@@ -33,9 +33,9 @@ DEFAULT_POST_IMG_OUTPUT_FILE_NAME = 'post-image.png'
 DEFAULT_POST_IMG_OUTPUT_FOLDER = './temp/'
 DEFAULT_IG_LINK_STICKER_TEXT = 'ver oferta'
 
-# --- The Pipeline class ---
+# --- The Bot class ---
 
-class Pipeline:
+class Bot:
 
     # --- Magic methods ---
 
@@ -101,7 +101,7 @@ class Pipeline:
 
     # --- Public methods ---
 
-    # Get Pipeline
+    # Get Bot
     @classmethod
     def get(cls,
             input_txt_file_name:str = DEFAULT_INPUT_TXT_FILE_NAME,
@@ -115,42 +115,42 @@ class Pipeline:
             ):
         # TODO Add a docstring
 
-        # Return Pipeline object
-        logger.info('Getting Pipeline object...')
-        return Pipeline(input_txt_file_name=input_txt_file_name,
-                        input_txt_folder=input_txt_folder,
-                        input_txt_default_content=input_txt_default_content,
-                        valid_url_prefixes=valid_url_prefixes,
-                        post_img_template_path=post_img_template_path,
-                        post_img_output_file_name=post_img_output_file_name,
-                        post_img_output_folder=post_img_output_folder,
-                        ig_link_sticker_text=ig_link_sticker_text)
+        # Return Bot object
+        logger.info('Getting Bot object...')
+        return Bot(input_txt_file_name=input_txt_file_name,
+                   input_txt_folder=input_txt_folder,
+                   input_txt_default_content=input_txt_default_content,
+                   valid_url_prefixes=valid_url_prefixes,
+                   post_img_template_path=post_img_template_path,
+                   post_img_output_file_name=post_img_output_file_name,
+                   post_img_output_folder=post_img_output_folder,
+                   ig_link_sticker_text=ig_link_sticker_text)
 
 
-    # Run pipeline
+    # Run bot
     def run(self):
         # TODO Add a docstring
         
-        self._logger.info('Starting pipeline...')
+        self._logger.info('Starting bot...')
 
-        # Check input.txt status, stop pipeline if file not found
+        # Check input.txt status, stop bot if file not found
         self._logger.info(f'Checking input.txt status...')
         status = self._check_input_txt_status(create_if_not_found=True,
                                               input_txt_default_content=DEFAULT_INPUT_TXT_CONTENT)
         if status == 1:
             sys.exit(f'File "{self.input_txt_file_path}" not found. '\
-                     f'Create file and run pipeline again. Stopping...')
+                     f'Create file and run bot again. Stopping...')
 
         # Parse input.txt
         self._logger.info(f'Parsing input.txt...')
         offer_urls = self._parse_input_txt()
 
-        # If no valid urls parsed, stop pipeline
+        # If no valid urls parsed, stop bot
         if len(offer_urls) == 0:
             sys.exit(f'File "{self.input_txt_file_path}" '\
                      f'has no valid urls for parsing. '\
                      f'Add valid urls to the file and '\
-                     f'run pipeline again.')
+                     f'run bot again.')
 
         # Get offer scraper object
         self._logger.info('Creating offer scraper...')
@@ -188,7 +188,7 @@ class Pipeline:
             self._create_input_txt(content=self.input_txt_default_content,
                                    urls=offer_urls)
 
-            self._logger.info('Pipeline run complete.')
+            self._logger.info('Bot run complete.')
 
 
     # --- Helper methods ---
