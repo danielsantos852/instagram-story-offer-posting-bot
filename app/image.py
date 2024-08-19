@@ -1,79 +1,66 @@
 # --- Imports ---
-
 # Standard
 import logging
 from textwrap import fill
-
 # Third party
 from PIL import Image, ImageDraw, ImageFont
-
 # Local
 from offer import Offer
 
 
 # --- Global configuration ---
-
 # Logger setup
 logger = logging.getLogger(name=__name__)
 logger.setLevel(level=logging.DEBUG)
 handler = logging.FileHandler(filename='./logs/log.log', mode='a')
-formatter = logging.Formatter(fmt='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+formatter = logging.Formatter(
+    fmt='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(fmt=formatter)
 logger.addHandler(hdlr=handler)
-
-
 # Global variables
 DEFAULT_FONT_PATH = './resources/fonts/open_sans.ttf'
 DEFAULT_PRODUCT_NAME_MAX_LEN = 50
-DEFAULT_OFFER_POST_TEMPLATE_PATH = './resources/templates/story-720x1280-blue.png'
+DEFAULT_POST_IMG_TEMPLATE = './resources/templates/story-720x1280-blue.png'
 DEFAULT_OUTPUT_IMG_FOLDER = './temp/'
 DEFAULT_OUTPUT_IMG_NAME = 'image.png'
 
 
 # --- The Generator class ---
 class Generator:
-
     # --- Magic methods ---
-
     # __init__
-    def __init__(self,
-                 offer_post_template:str
-                 ):
+    def __init__(self, post_img_template:str):
 
         # Instance logger setup
         self._logger = logging.getLogger(__name__)\
                               .getChild(self.__class__.__name__)\
 
         # Validate offer post template
-        if not offer_post_template:
-            raise ValueError('Missing offer post template path.')
+        if not post_img_template:
+            raise ValueError('Missing post image template file path.')
 
         # Set instance variables
-        self.offer_post_template = offer_post_template
+        self.post_img_template = post_img_template
     
     
     # --- Public methods ---
-
     # Get Generator
     @classmethod
-    def get(cls, 
-            offer_post_template:str = DEFAULT_OFFER_POST_TEMPLATE_PATH
-            ):
+    def get(cls, post_img_template:str = DEFAULT_POST_IMG_TEMPLATE):
         # TODO Add a docstring
-
         # Return Generator object
         logger.info('Getting Generator object ...')
-        return Generator(offer_post_template=offer_post_template)
+        return Generator(post_img_template=post_img_template)
 
 
     # Create an offer post image
-    def create_offer_post_image(self,
-                                offer:Offer,
-                                output_img_name:str = DEFAULT_OUTPUT_IMG_NAME,
-                                output_img_folder:str = DEFAULT_OUTPUT_IMG_FOLDER
-                                ) -> str:
+    def create_offer_post_image(
+            self,
+            offer:Offer,
+            output_img_folder:str = DEFAULT_OUTPUT_IMG_FOLDER,
+            output_img_name:str = DEFAULT_OUTPUT_IMG_NAME
+        ) -> str:
         # TODO Add a docstring
-
         # Create new post image from template
         self._logger.info('Creating new post image from template ...')
         self._new_image_from_template()
@@ -173,25 +160,24 @@ class Generator:
         return output_file_path
 
 
-# --- Helper methods ---
-
+    # --- Helper methods ---
     # Insert textbox into image
-    def _insert_textbox(self,
-                        anchor:str='la',
-                        x:float = 0,
-                        y:float = 0,
-                        text:str = '',
-                        text_font:str = DEFAULT_FONT_PATH,
-                        text_size:float = 10,
-                        text_boldness:int = 0,
-                        text_underline:bool = False,
-                        text_strikethrough:bool = False,
-                        text_color:tuple = (0,0,0),
-                        text_bg_color:tuple|None = None,
-                        text_align:str = 'left',
-                        ) -> None:
+    def _insert_textbox(
+            self,
+            anchor:str='la',
+            x:float = 0,
+            y:float = 0,
+            text:str = '',
+            text_font:str = DEFAULT_FONT_PATH,
+            text_size:float = 10,
+            text_boldness:int = 0,
+            text_underline:bool = False,
+            text_strikethrough:bool = False,
+            text_color:tuple = (0,0,0),
+            text_bg_color:tuple|None = None,
+            text_align:str = 'left',
+        ) -> None:
         # TODO Add a docstring
-
         self._logger.debug(f'Inserting textbox at (x,y)=({x},{y}) ...')
 
         # Get drawing interface
@@ -244,9 +230,8 @@ class Generator:
     # New image from template
     def _new_image_from_template(self) -> None:
         # TODO Add a docstring
-
         # Create new PIL Image from template
-        new_image = Image.open(self.offer_post_template)
+        new_image = Image.open(self.post_img_template)
 
         # Set new image as object current image
         self._current_image = new_image
@@ -256,16 +241,16 @@ class Generator:
 
 
     # Paste image into current image
-    def _paste(self, 
-               src:str,
-               x:int,
-               y:int,
-               width:int,
-               heigth:int,
-               has_transparency:bool = False
-               ) -> None:
+    def _paste(
+            self, 
+            src:str,
+            x:int,
+            y:int,
+            width:int,
+            heigth:int,
+            has_transparency:bool = False
+        ) -> None:
         # TODO Add a docstring
-
         self._logger.debug(f'Pasting image "{src}" to self._current_image ...')
 
         # Load source image as PIL Image, resize it
@@ -285,12 +270,12 @@ class Generator:
 
 
     # Save current image as
-    def _save_image_as(self,
-                       output_file_name:str,
-                       output_file_folder:str,
-                       ) -> str:
+    def _save_image_as(
+            self,
+            output_file_name:str,
+            output_file_folder:str,
+        ) -> str:
         # TODO Add a docstring
-
         # Set destination path
         output_file_path = f'{output_file_folder}{output_file_name}'
 
