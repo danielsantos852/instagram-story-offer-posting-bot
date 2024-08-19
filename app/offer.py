@@ -27,7 +27,23 @@ class Offer:
             price_before:float|None,
             discount:float|None,
         ):
-        # TODO Add a docstring.
+        """"
+        Initialize an Offer object.
+
+        :param url: URL to the offer.
+
+        :param name: Product name.
+
+        :param thumbnail: File path to product thumbnail.
+
+        :param price_now: Product price after discount.
+        
+        :param price_before: Product price before discount.
+
+        :param discount: Discount rate as a float (1.0 = 100%).
+
+        :returns: None.
+        """
         # Instance logger setup
         self._logger = logging.getLogger(__name__)\
                               .getChild(self.__class__.__name__)
@@ -77,7 +93,23 @@ class Offer:
             price_before:float|None,
             discount:float|None
         ):
-        # TODO Add a docstring
+        """"
+        Get an Offer.
+
+        :param url: URL to the offer.
+
+        :param name: Product name.
+
+        :param thumbnail: File path to product thumbnail.
+
+        :param price_now: Product price after discount.
+        
+        :param price_before: Product price before discount.
+
+        :param discount: Discount rate as a float (1.0 = 100%).
+
+        :returns: An Offer object.
+        """
         # Return Offer object
         logger.debug('Getting Offer object...')
         return Offer(url=url,
@@ -90,7 +122,14 @@ class Offer:
 
     # Get discount (as float or str)
     def get_discount(self, as_str:bool = True) -> float|str:
-        # TODO Add a docstring
+        """
+        Get offer's discount value (as float or as str).
+
+        :param as_str: If set to True, return value will be like "100%" (str). 
+            If set to False, return value will be like 1.0 (float).
+
+        :returns: Offer's discount value (as float or as str).
+        """
         if not as_str:
             return self.discount                    # 1.0
         else:
@@ -103,7 +142,18 @@ class Offer:
             now_or_before:str = 'now', 
             as_str:bool = True
         ) -> float|str:
-        # TODO Add a docstring
+        """
+        Get offer's price value (as float or as str).
+
+        :param now_or_before: If set to "now", offer's "now" price will be 
+            returned. If set to "before", offer's "before" price will be 
+            returned.
+
+        :param as_str: If set to True, return value will be like "1.000,00" 
+            (str). If set to False, return value will be like 1000.0 (float).
+
+        :returns: Offer's "now" or "before" price value (as float or as str).
+        """
         # Get specified price ("now" or "before")
         if now_or_before == 'now':
             price = self.price_now
