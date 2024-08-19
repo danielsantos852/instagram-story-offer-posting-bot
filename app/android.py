@@ -134,8 +134,8 @@ class Device:
                f'ppadb object: {self.device_adb}\n'\
                f'---------------------------------------------------------'
 
-    # --- Public methods ---
 
+    # --- Public methods ---
     # Get Device
     @classmethod
     def get(
@@ -346,7 +346,6 @@ class Device:
 
 
     # --- Helper methods ---
-    
     # Delete image from SD card
     def _delete_image_from_sdcard(self, file_path:str) -> None:
         """
