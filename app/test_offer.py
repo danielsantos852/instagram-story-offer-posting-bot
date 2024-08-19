@@ -14,12 +14,14 @@ def main():
 
 # Get fake offer
 def get_fake_offer() -> Offer:
-    return Offer.get(url='www.google.com',
-                     name='Novo tênis Fancy Pro V2 Vintage Kombi Juntos e Shallow Now TODOS OS TAMANHOS',
-                     thumbnail='./resources/testing/product-thumbnail-640x640.png',
-                     price_now=9999.99,
-                     price_before=9999.99,
-                     discount=0.99)
+    return Offer.get(
+        url='www.google.com',
+        name='Novo tênis Fancy Pro V2 Vintage Kombi Juntos e Shallow Now '\
+             'TODOS OS TAMANHOS',
+        thumbnail='./resources/testing/product-thumbnail-640x640.png',
+        price_now=9999.99,
+        price_before=9999.99,
+        discount=0.99)
 
 
 # Test Offer.get_price()
