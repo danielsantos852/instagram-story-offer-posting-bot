@@ -1,34 +1,33 @@
 # --- Imports ---
-
 # Standard
 import logging
 
-# --- Global Configuration ---
 
+# --- Global Configuration ---
 # Logger setup
 logger = logging.getLogger(name=__name__)
 logger.setLevel(level=logging.INFO)
 handler = logging.FileHandler(filename='./logs/log.log', mode='a')
-formatter = logging.Formatter(fmt='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+formatter = logging.Formatter(
+    fmt='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(fmt=formatter)
 logger.addHandler(hdlr=handler)
 
 
 # --- The Offer class ---
 class Offer:
-    
     # --- Magic methods ---
-
     # __init__
-    def __init__(self,
-                 url:str,
-                 name:str,
-                 thumbnail:str,
-                 price_now:float,
-                 price_before:float|None,
-                 discount:float|None,
-                 ):
-
+    def __init__(
+            self,
+            url:str,
+            name:str,
+            thumbnail:str,
+            price_now:float,
+            price_before:float|None,
+            discount:float|None,
+        ):
+        # TODO Add a docstring.
         # Instance logger setup
         self._logger = logging.getLogger(__name__)\
                               .getChild(self.__class__.__name__)
@@ -67,19 +66,18 @@ class Offer:
 
 
     # --- Public methods ---
-
     # Get Offer
     @classmethod
-    def get(cls,
+    def get(
+            cls,
             url:str,
             name:str,
             thumbnail:str,
             price_now:float,
             price_before:float|None,
             discount:float|None
-            ):
+        ):
         # TODO Add a docstring
-
         # Return Offer object
         logger.debug('Getting Offer object...')
         return Offer(url=url,
@@ -94,20 +92,18 @@ class Offer:
     def get_discount(self, as_str:bool = True) -> float|str:
         # TODO Add a docstring
         if not as_str:
-            return self.discount
+            return self.discount                    # 1.0
         else:
-            discount = self.discount       # 1.00
-            discount = f'{(discount*100):.0f}%' # "100%"
-        return discount
+            return f'{(self.discount*100):.0f}%'    # "100%"
 
 
     # Get ("now" or "before") price (as float or str)
-    def get_price(self, 
-                  now_or_before:str = 'now', 
-                  as_str:bool = True
-                  ) -> float|str:
+    def get_price(
+            self, 
+            now_or_before:str = 'now', 
+            as_str:bool = True
+        ) -> float|str:
         # TODO Add a docstring
-
         # Get specified price ("now" or "before")
         if now_or_before == 'now':
             price = self.price_now
