@@ -1,44 +1,40 @@
 # --- Imports ---
-
 # Standard
 import logging
 import os
 import sys
-
 # Local
 from android import Device as AndroidDevice
 from image import Generator as ImageGenerator
 from scraping import Scraper as OfferScraper
 
-# --- Global Configuration ---
 
+# --- Global Configuration ---
 # Logger setup
 logger = logging.getLogger(name=__name__)
 logger.setLevel(level=logging.INFO)
 handler = logging.FileHandler(filename='./logs/log.log', mode='a')
-formatter = logging.Formatter(fmt='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+formatter = logging.Formatter(
+    fmt='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(fmt=formatter)
 logger.addHandler(hdlr=handler)
-
 # Global variables
 DEFAULT_INPUT_TXT_FILE_NAME = 'input.txt'
 DEFAULT_INPUT_TXT_FOLDER = './offers/'
-DEFAULT_INPUT_TXT_CONTENT = "Paste a single offer url per line, no more, no less.\n"
-
+DEFAULT_INPUT_TXT_TEXT = 'Paste a single offer url per line. '\
+                         'No more, no less.\n'
 DEFAULT_VALID_URL_PREFIXES = ['https://amzn.to/', 
                               'https://www.amazon.com.br/']
-
-DEFAULT_POST_IMG_TEMPLATE_PATH = './resources/templates/story-720x1280-gray-white.png'
+DEFAULT_POST_IMG_TEMPLATE_PATH = './resources/templates/'\
+                                 'offer-post-720x1280.png'
 DEFAULT_POST_IMG_OUTPUT_FILE_NAME = 'post-image.png'
 DEFAULT_POST_IMG_OUTPUT_FOLDER = './temp/'
 DEFAULT_IG_LINK_STICKER_TEXT = 'ver oferta'
 
+
 # --- The Bot class ---
-
 class Bot:
-
     # --- Magic methods ---
-
     # __init__
     def __init__(self,
                  input_txt_file_name:str,
@@ -100,13 +96,12 @@ class Bot:
 
 
     # --- Public methods ---
-
     # Get Bot
     @classmethod
     def get(cls,
             input_txt_file_name:str = DEFAULT_INPUT_TXT_FILE_NAME,
             input_txt_folder:str = DEFAULT_INPUT_TXT_FOLDER,
-            input_txt_default_content:str = DEFAULT_INPUT_TXT_CONTENT,
+            input_txt_default_content:str = DEFAULT_INPUT_TXT_TEXT,
             valid_url_prefixes:list = DEFAULT_VALID_URL_PREFIXES,
             post_img_template_path:str = DEFAULT_POST_IMG_TEMPLATE_PATH,
             post_img_output_file_name:str = DEFAULT_POST_IMG_OUTPUT_FILE_NAME,
@@ -129,14 +124,14 @@ class Bot:
 
     # Run bot
     def run(self):
-        # TODO Add a docstring
-        
+        # TODO Add a docstring     
         self._logger.info('Starting bot...')
 
         # Check input.txt status, stop bot if file not found
         self._logger.info(f'Checking input.txt status...')
-        status = self._check_input_txt_status(create_if_not_found=True,
-                                              input_txt_default_content=DEFAULT_INPUT_TXT_CONTENT)
+        status = self._check_input_txt_status(
+            create_if_not_found=True,
+            input_txt_default_content=DEFAULT_INPUT_TXT_TEXT)
         if status == 1:
             sys.exit(f'File "{self.input_txt_file_path}" not found. '\
                      f'Create file and run bot again. Stopping...')
@@ -158,7 +153,8 @@ class Bot:
 
         # Get image generator object
         self._logger.info('Creating offer image generator...')
-        generator = ImageGenerator.get(ig_post_template_path=self.post_img_template_path)
+        generator = ImageGenerator.get(
+            post_img_template=self.post_img_template_path)
 
         # Get android device object
         self._logger.info('Connecting to android device...')
@@ -171,15 +167,17 @@ class Bot:
             offer = scraper.scrape_amazon_offer(offer_urls[0])
 
             # Create Instagram post image
-            img_post = generator.create_ig_post_image(offer,
-                                                      self.post_img_output_file_name,
-                                                      self.post_img_output_folder)
+            post_img = generator.create_offer_post_image(
+                offer=offer,
+                output_img_folder=self.post_img_output_folder,
+                output_img_name=self.post_img_output_file_name)
 
             # Post Instagram story
-            device.post_instagram_story(post_image=img_post,
-                                        linksticker_url=offer.url,
-                                        linksticker_custom_text=self.ig_link_sticker_text,
-                                        close_friends_only=True)
+            device.post_instagram_story(
+                post_image=post_img,
+                linksticker_url=offer.url,
+                linksticker_custom_text=self.ig_link_sticker_text,
+                close_friends_only=True)
 
             # Remove first url from offer urls list
             offer_urls.pop(0)
@@ -188,46 +186,47 @@ class Bot:
             self._create_input_txt(content=self.input_txt_default_content,
                                    urls=offer_urls)
 
-            self._logger.info('Bot run complete.')
+        self._logger.info('Bot run complete.')
 
 
     # --- Helper methods ---
-
     # Check input.txt status
-    def _check_input_txt_status(self,
-                                create_if_not_found:bool = True,
-                                input_txt_default_content:str = ''
-                                ) -> int:
+    def _check_input_txt_status(
+            self,
+            create_if_not_found:bool = True,
+            input_txt_default_content:str = ''
+        ) -> int:
         # TODO Add a docstring
-
         # If file exists, return status 0
         if os.path.exists(self.input_txt_file_path):
-            self._logger.debug(f'File "{self.input_txt_file_path}" exists. Return status 0.')
+            self._logger.debug(f'File "{self.input_txt_file_path}" exists. '
+                               f'Return status 0.')
             return 0
-
         # If absent file:
         else:
-            
             # If create_if_not_found, create file, return status 0
             if create_if_not_found:
-                self._logger.debug(f'File "{self.input_txt_file_path}" does not exist. Creating...')
+                self._logger.debug(f'File "{self.input_txt_file_path}" '\
+                                   f'does not exist. Creating...')
                 self._create_input_txt(content=input_txt_default_content)
-                self._logger.debug(f'Created file "{self.input_txt_file_path}". Return status 0.')
+                self._logger.debug(f'Created file '\
+                                   f'"{self.input_txt_file_path}". '\
+                                   f'Return status 0.')
                 return 0
-            
             # Else, return status 1
             else:
-                self._logger.debug(f'File "{self.input_txt_file_path}" does not exist. Return status 1.')
+                self._logger.debug(f'File "{self.input_txt_file_path}" '\
+                                   f'does not exist. Return status 1.')
                 return 1
 
 
     # Create input.txt
-    def _create_input_txt(self,
-                          content:str = '',
-                          urls:list = []
-                          ) -> str:
+    def _create_input_txt(
+            self,
+            content:str = '',
+            urls:list = []
+        ) -> str:
         # TODO Add a docstring
-
         # If urls list provided, add urls to content
         if len(urls) > 0:
             self._logger.debug(f'Adding urls to input.txt content...')
@@ -248,7 +247,6 @@ class Bot:
     # Parse input.txt
     def _parse_input_txt(self) -> list:
         # TODO Add a docstring
-
         # Read input.txt lines to memory
         with open(self.input_txt_file_path, 'r') as file:
             lines = file.readlines()
@@ -266,7 +264,8 @@ class Bot:
         for line in valid_lines:
             valid_url = line.replace('\n','').strip()
             valid_urls.append(valid_url)
-        self._logger.debug(f'Parsed {self.input_txt_file_path}. Valid URLs found: {len(valid_urls)}.')
+        self._logger.debug(f'Parsed {self.input_txt_file_path}. '\
+                           f'Valid URLs found: {len(valid_urls)}.')
 
         # Return valid urls list
         return valid_urls
