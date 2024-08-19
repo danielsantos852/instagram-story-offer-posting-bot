@@ -1,6 +1,6 @@
 # instagram-story-offer-posting-bot
 
-This is a in-progress, hobby-study-like project.
+This is an in-progress, hobby-study-like project.
 
 A bot that:
 - [x] parses offer urls from an input.txt file (currently, only from amazon.com.br);
