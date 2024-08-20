@@ -9,8 +9,8 @@ def main():
     # Get bot
     bot = Bot.get()
 
-    # Run bot
-    bot.run()
+    # Run bot (by offer)
+    bot.run_by_offer()
 
 
 # Call main()
