@@ -6,6 +6,7 @@ import os
 import random
 import sys
 from time import sleep
+
 # Third party
 from PIL import Image
 from ppadb.client import Client as AdbClient
@@ -23,6 +24,7 @@ formatter = logging.Formatter(
     fmt='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(fmt=formatter)
 logger.addHandler(hdlr=handler)
+
 # Global Variables
 DEFAULT_ADB_SERVER_IP = '127.0.0.1'
 DEFAULT_ADB_SERVER_PORT = 5037
@@ -42,6 +44,7 @@ SPRITE_RECENTS = './resources/sprites/recents.png'
 SPRITE_SEARCHFIELD = './resources/sprites/searchfield.png'
 SPRITE_URLFIELD = './resources/sprites/urlfield.png'
 SPRITE_YOURSTORY = './resources/sprites/yourstory.png'
+
 # Pyautogui's setup
 pyautogui.useImageNotFoundException(True)
 
@@ -61,7 +64,7 @@ class Device:
             device_name:str
         ):
         """
-        Initialize a Device object.
+        Initialize an instance of Device class.
 
         :param adb_server_ip: ADB server IP.
 
@@ -121,7 +124,6 @@ class Device:
         self.device_screen_height = device_screen_height
         self.device_name = device_name
 
-
     # __str__
     def __str__(self) -> str:
         return f'---------------------- Device Info ----------------------\n'\
@@ -134,7 +136,6 @@ class Device:
                f'ppadb object: {self.device_adb}\n'\
                f'---------------------------------------------------------'
 
-
     # --- Public methods ---
     # Get Device
     @classmethod
@@ -145,7 +146,7 @@ class Device:
             adb_server_port:int = DEFAULT_ADB_SERVER_PORT
         ):
         """
-        Get an Android device.
+        Get a Device instance.
 
         :param device_name: Device name (for human identification purposes 
             only).
@@ -154,7 +155,7 @@ class Device:
 
         :param adb_server_port: Host's ADB server port.
 
-        :returns: A Device object.
+        :returns: An instance of Device.
         """
         # Logger set up
         _get_logger = logging.getLogger(__name__)\
@@ -208,7 +209,6 @@ class Device:
                    device_screen_width=screen_width,
                    device_screen_height=screen_height,
                    device_name=device_name)
-
 
     # Post Instagram Story
     def post_instagram_story(
@@ -344,7 +344,6 @@ class Device:
         # Return nothing
         return None
 
-
     # --- Helper methods ---
     # Delete image from SD card
     def _delete_image_from_sdcard(self, file_path:str) -> None:
@@ -362,7 +361,6 @@ class Device:
 
         # Return nothing
         return None
-
 
     # Find on screen
     def _find_on_screen(
@@ -433,7 +431,6 @@ class Device:
                 self._logger.debug(f'Located image at {search_image_box}')
                 return search_image_box
 
-
     # Input screen drag-and-drop
     def _input_screen_drag_and_drop(
             self,
@@ -495,7 +492,6 @@ class Device:
         # Return nothing
         return None
 
-
     # Input screen tap
     def _input_screen_tap(
             self,
@@ -544,7 +540,6 @@ class Device:
         # Return nothing
         return None
 
-
     # Input text
     def _input_text(self, text:str='') -> None:
         """"
@@ -561,7 +556,6 @@ class Device:
 
         # Return nothing
         return None
-
 
     # Launch Instagram app
     def _launch_instagram_app(
@@ -595,7 +589,6 @@ class Device:
 
         # Return nothing
         return None
-
 
     # Push image to SD card
     def _push_image_to_sdcard(
@@ -645,13 +638,14 @@ class Device:
         # Return destination file path
         return dest_file_path
 
-
     # Sleep
     def _sleep(self, wait_time:float) -> None:
         """
         Halt the execution for a specified amount of time.
 
         :param wait_time: Idle time (in seconds).
+
+        :returns: None.
         """
         # Sleep for some time
         self._logger.debug(f'Sleeping for {wait_time} seconds...')
@@ -660,7 +654,6 @@ class Device:
 
         # Return nothing
         return None
-
 
     # Take screencap
     def _take_screencap(self, output_path:str|None = None) -> bytearray:
@@ -686,4 +679,3 @@ class Device:
 
         # Return screencap as bytearray
         return screencap
-

@@ -1,13 +1,11 @@
 # --- Imports ---
-
 # Local
 from bot import Bot
 
 
 # --- Main Function ---
-
 def main():
-
+    
     # Get bot
     bot = Bot.get()
 

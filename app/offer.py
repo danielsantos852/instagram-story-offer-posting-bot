@@ -68,7 +68,6 @@ class Offer:
         self.price_before = price_before
         self.discount = discount
 
-
     # __str__
     def __str__(self) -> str:
         return f' --- Offer info ---\n'\
@@ -79,7 +78,6 @@ class Offer:
                f'price_before = {self.price_before}\n'\
                f'discount = {self.discount}\n'\
                f' ------------------'
-
 
     # --- Public methods ---
     # Get Offer
@@ -108,17 +106,16 @@ class Offer:
 
         :param discount: Discount rate as a float (1.0 = 100%).
 
-        :returns: An Offer object.
+        :returns: An instance of Offer.
         """
-        # Return Offer object
-        logger.debug('Getting Offer object...')
+        # Return Offer instance
+        logger.debug('Getting Offer instance...')
         return Offer(url=url,
                      name=name,
                      thumbnail=thumbnail,
                      price_now=price_now,
                      price_before=price_before,
                      discount=discount)
-
 
     # Get discount (as float or str)
     def get_discount(self, as_str:bool = True) -> float|str:
@@ -134,7 +131,6 @@ class Offer:
             return self.discount                    # 1.0
         else:
             return f'{(self.discount*100):.0f}%'    # "100%"
-
 
     # Get ("now" or "before") price (as float or str)
     def get_price(
@@ -172,4 +168,3 @@ class Offer:
             if len(price.split(',')[0]) > 3:
                 price = f'{price[:-6]}.{price[-6:]}'    # "0.000,00"
             return price
-

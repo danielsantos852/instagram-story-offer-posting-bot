@@ -1,41 +1,41 @@
 # --- Imports ---
-
 # Standard
 from io import BytesIO
 import requests
 import logging
-
 # Third party
 from PIL import Image
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
-
 # Local
 from offer import Offer
 
-# --- Global Configuration ---
 
+# --- Global Configuration ---
 # Logger setup
 logger = logging.getLogger(name=__name__)
 logger.setLevel(level=logging.INFO)
 handler = logging.FileHandler(filename='./logs/log.log', mode='a')
-formatter = logging.Formatter(fmt='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+formatter = logging.Formatter(
+    fmt='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(fmt=formatter)
 logger.addHandler(hdlr=handler)
-
 # Global variables
 DEFAULT_THUMBNAIL_DEST_FILE_NAME = 'thumbnail.png'
 DEFAULT_THUMBNAIL_DEST_FOLDER = './temp/'
 
+
 # --- The Scraper class ---
 class Scraper:
-
     # --- Magic methods ---
-
     # __init__
     def __init__(self):
+        """
+        Initialize an instance of Scraper class.
 
+        :returns: None.
+        """
         # Instance logger setup
         self._logger = logging.getLogger(__name__)\
                               .getChild(self.__class__.__name__)
@@ -43,27 +43,39 @@ class Scraper:
         # Set object attributes
         self.webdriver = None
 
-
     # --- Public methods ---
-
     # Get Scraper object
     @classmethod
     def get(cls):
-        # TODO Add a docstring
+        """
+        Get a Scraper instance.
 
+        :returns: An instance of Scraper.
+        """
         # Return Scraper object
         logger.info('Getting Scraper object...')
         return Scraper()
 
-
     # Scrape an amazon.com.br offer
-    def scrape_amazon_offer(self,
-                            url:str,
-                            thumbnail_dest_file_name:str = DEFAULT_THUMBNAIL_DEST_FILE_NAME,
-                            thumbnail_dest_folder:str = DEFAULT_THUMBNAIL_DEST_FOLDER
-                            ) -> Offer:
-        # TODO Add a docstring
+    def scrape_amazon_offer(
+            self,
+            url:str,
+            thumbnail_dest_folder:str = DEFAULT_THUMBNAIL_DEST_FOLDER,
+            thumbnail_dest_file_name:str = DEFAULT_THUMBNAIL_DEST_FILE_NAME
+        ) -> Offer:
+        """
+        Scrapes offer data from an amazon.com.br offer page.
 
+        :param url: URL to the offer on amazon.com.br website.
+
+        :param thumbnail_dest_folder: product thumbnail image destination 
+            folder.
+        
+        :param thumbnail_dest_file_name: product thumbnail image destination 
+            file.
+
+        :returns: An instance of Offer (with the offer's data).
+        """
         # Create a web driver
         self._logger.info('Creating webdriver...')
         self._create_webdriver()
@@ -75,7 +87,9 @@ class Scraper:
 
         # Get offer title
         self._logger.info('Getting offer title...')
-        offer_title = self.driver.find_element(by=By.ID, value='productTitle').text.strip()
+        offer_title = self.driver.find_element(by=By.ID, 
+                                               value='productTitle').text\
+                                 .strip()
         self._logger.debug(f'offer_title = "{offer_title}"')
 
         # Get offer thumbnail url
@@ -94,19 +108,31 @@ class Scraper:
 
         # Get "now" price
         self._logger.info('Getting offer "now" price...')
-        element = self.driver.find_element(by=By.ID, value='corePriceDisplay_desktop_feature_div')
-        price_whole = element.find_element(by=By.CLASS_NAME, value='a-price-whole').text.replace('.','').strip()
-        price_fraction = element.find_element(by=By.CLASS_NAME, value='a-price-fraction').text.strip()
+        element = self.driver\
+            .find_element(by=By.ID, 
+                          value='corePriceDisplay_desktop_feature_div')
+        price_whole = element\
+            .find_element(by=By.CLASS_NAME, 
+                          value='a-price-whole')\
+            .text.replace('.','').strip()
+        price_fraction = element\
+            .find_element(by=By.CLASS_NAME, 
+                          value='a-price-fraction').text.strip()
         offer_price_now = float(f'{price_whole}.{price_fraction}')
         self._logger.debug(f'offer_price_now = {offer_price_now}')
 
         # Get "before" price
         try:
             self._logger.info('Getting offer "before" price...')
-            _ = element.find_element(by=By.CLASS_NAME, value='a-spacing-small')
-            _ = _.find_element(by=By.CLASS_NAME, value='a-text-price').text
-            offer_price_before = float(_.replace('R$','').replace('.','').replace(',','.'))
+            _ = element.find_element(by=By.CLASS_NAME,
+                                     value='a-spacing-small')\
+                       .find_element(by=By.CLASS_NAME,
+                                     value='a-text-price').text
+            offer_price_before = float(_.replace('R$','')\
+                                        .replace('.','')\
+                                        .replace(',','.'))
             self._logger.debug(f'offer_price_before = {offer_price_before}')
+        
         except NoSuchElementException:
             offer_price_before = None
             self._logger.debug('Offer "before" price not found, '\
@@ -115,19 +141,22 @@ class Scraper:
         # Get discount rate
         try:
             self._logger.info('Getting offer discount rate...')
-            _ = element.find_element(by=By.CLASS_NAME, value='savingsPercentage').text
+            _ = element.find_element(by=By.CLASS_NAME, 
+                                     value='savingsPercentage').text
             offer_discount_rate = float(_.replace('-','').replace('%',''))/100
             self._logger.debug(f'offer_discount_rate = {offer_discount_rate}')
+        
         except NoSuchElementException:
             offer_discount_rate = None
-            self._logger.debug('Offer discount not found, offer_discount_rate set to None.')
+            self._logger.debug(
+                'Offer discount not found, offer_discount_rate set to None.')
 
         # Quit web driver
         self._logger.info('Deleting webdriver...')
         self._delete_webdriver()
 
-        # Return Offer object
-        self._logger.info('Returning Offer object...')
+        # Return Offer instance
+        self._logger.info('Returning Offer instance...')
         return Offer(url=offer_url,
                      title=offer_title,
                      thumbnail=offer_thumbnail,
@@ -135,13 +164,14 @@ class Scraper:
                      price_before=offer_price_before,
                      discount_rate=offer_discount_rate)
 
-
     # --- Helper methods ---
-
     # Create webdriver
-    def _create_webdriver(self):
-        # TODO Add a docstring
+    def _create_webdriver(self) -> None:
+        """
+        Create a Chrome webdriver.
 
+        :returns: None.
+        """
         # Set Chrome webdriver options and start it
         options = webdriver.ChromeOptions()
         options.add_argument('headless')
@@ -156,12 +186,20 @@ class Scraper:
         # Return nothing
         return None
 
-
     # Delete webdriver
-    def _delete_webdriver(self, 
-                          driver:webdriver.Chrome|None = None):
-        # TODO Add a docstring
+    def _delete_webdriver(
+            self, 
+            driver:webdriver.Chrome|None = None
+        ) -> None:
+        """
+        Delete a Chrome webdriver.
 
+        :param driver: The webdriver to be deleted.
+            If no webdriver provided, function will delete instance's 
+            webdriver instead.
+        
+        :returns: None.
+        """
         # If external driver passed, close it
         if driver:
             self._logger.debug(f'Quitting specified webdriver...')

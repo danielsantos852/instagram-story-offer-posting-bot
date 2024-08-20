@@ -2,8 +2,10 @@
 # Standard
 import logging
 from textwrap import fill
+
 # Third party
 from PIL import Image, ImageDraw, ImageFont
+
 # Local
 from offer import Offer
 
@@ -17,6 +19,7 @@ formatter = logging.Formatter(
     fmt='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(fmt=formatter)
 logger.addHandler(hdlr=handler)
+
 # Global variables
 DEFAULT_FONT_PATH = './resources/fonts/open_sans.ttf'
 DEFAULT_PRODUCT_NAME_MAX_LEN = 50
@@ -30,7 +33,13 @@ class Generator:
     # --- Magic methods ---
     # __init__
     def __init__(self, post_img_template:str):
+        """
+        Initialize an instance of Generator class.
 
+        :param post_img_template: File path to a post image template.
+
+        :returns: None.
+        """
         # Instance logger setup
         self._logger = logging.getLogger(__name__)\
                               .getChild(self.__class__.__name__)\
@@ -42,16 +51,20 @@ class Generator:
         # Set instance variables
         self.post_img_template = post_img_template
     
-    
     # --- Public methods ---
     # Get Generator
     @classmethod
     def get(cls, post_img_template:str = DEFAULT_POST_IMG_TEMPLATE):
-        # TODO Add a docstring
+        """
+        Get a Generator instance.
+
+        :param post_img_template: File path to a post template image.
+
+        :returns: An instance of Generator.
+        """
         # Return Generator object
         logger.info('Getting Generator object ...')
         return Generator(post_img_template=post_img_template)
-
 
     # Create an offer post image
     def create_offer_post_image(
@@ -60,13 +73,22 @@ class Generator:
             output_img_folder:str = DEFAULT_OUTPUT_IMG_FOLDER,
             output_img_name:str = DEFAULT_OUTPUT_IMG_NAME
         ) -> str:
-        # TODO Add a docstring
+        """
+        Create an offer post image for Instagram.
+
+        :param offer: An instance of Offer (with offer data in it).
+
+        :param output_img_folder: Path to output image folder.
+
+        :param output_img_name: Output image file name.
+
+        :returns: Path to output image file.
+        """
         # Create new post image from template
         self._logger.info('Creating new post image from template ...')
         self._new_image_from_template()
 
         # Add product thumbnail to post image
-        # FIXME Make this resize thumbnails while keeping aspect ratio
         self._logger.info('Adding product thumbnail to post image ...')
         self._paste(src=offer.thumbnail,
                     x=109,
@@ -159,7 +181,6 @@ class Generator:
         # Return output file path
         return output_file_path
 
-
     # --- Helper methods ---
     # Insert textbox into image
     def _insert_textbox(
@@ -177,7 +198,35 @@ class Generator:
             text_bg_color:tuple|None = None,
             text_align:str = 'left',
         ) -> None:
-        # TODO Add a docstring
+        """"
+        Insert a textbox into current image.
+
+        :param anchor: ImageDraw.Draw() anchor.
+
+        :param x: Textbox's X coordinate (in pixels).
+
+        :param y: Textbox's Y coordinate (in pixels).
+
+        :param text: Textbox's content text.
+
+        :param text_font: File path to a TTF font.
+
+        :param text_size: Size of text.
+
+        :param text_boldness: Boldness of text. Use 0, 1, or 2.
+
+        :param text_underline: If set to true, adds underline to text.
+
+        :param text_strikethrough: If set to true, adds strikethrough to text.
+
+        :param text_color: Color of text.
+
+        :param text_bg_color: Parameter not yet implemented.
+
+        :param text_align: Alignment of text. Use "left", "center", or "right".
+
+        :returns: None.
+        """
         self._logger.debug(f'Inserting textbox at (x,y)=({x},{y}) ...')
 
         # Get drawing interface
@@ -226,10 +275,13 @@ class Generator:
         # Return nothing
         return None
 
-
     # New image from template
     def _new_image_from_template(self) -> None:
-        # TODO Add a docstring
+        """
+        Create a new current image from a template image file in disk.
+
+        :returns: None.
+        """
         # Create new PIL Image from template
         new_image = Image.open(self.post_img_template)
 
@@ -239,8 +291,8 @@ class Generator:
         # Return nothing
         return None
 
-
     # Paste image into current image
+    # FIXME Make this method resize images while keeping aspect ratio
     def _paste(
             self, 
             src:str,
@@ -250,7 +302,24 @@ class Generator:
             heigth:int,
             has_transparency:bool = False
         ) -> None:
-        # TODO Add a docstring
+        # TODO Improve this docstring
+        """
+        Paste an image to current image.
+
+        :param src: Path to source image file.
+
+        :param x: 
+        
+        :param y:
+        
+        :param width:
+        
+        :param height:
+
+        :param has_transparency:
+
+        :returns: None.
+        """
         self._logger.debug(f'Pasting image "{src}" to self._current_image ...')
 
         # Load source image as PIL Image, resize it
@@ -268,22 +337,30 @@ class Generator:
         # Return nothing
         return None
 
-
     # Save current image as
     def _save_image_as(
             self,
-            output_file_name:str,
-            output_file_folder:str,
+            dest_folder:str,
+            dest_file_name:str
         ) -> str:
-        # TODO Add a docstring
+        """"
+        Save current image to disk.
+
+        :param dest_folder: Path to destination folder. 
+
+        :param dest_file_name: Output file name.
+
+        :returns: Destination file path.
+        """
         # Set destination path
-        output_file_path = f'{output_file_folder}{output_file_name}'
+        output_file_path = f'{dest_folder}{dest_file_name}'
 
         # Save current image to output file path
-        self._logger.debug(f'Saving self._current_image to "{output_file_path}" ...')
+        self._logger.debug(
+            f'Saving self._current_image to "{output_file_path}" ...')
         self._current_image.save(fp=output_file_path)
-        self._logger.debug('Saved current image. Returning output file path ...')
+        self._logger.debug(
+            f'Saved current image to "{output_file_path}". Returning output file path ...')
 
         # Return destination path
         return output_file_path
-
