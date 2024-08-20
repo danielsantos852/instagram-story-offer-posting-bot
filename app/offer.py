@@ -92,7 +92,7 @@ class Offer:
             discount:float|None
         ):
         """"
-        Get an Offer.
+        Get an Offer instance.
 
         :param url: URL to the offer.
 
