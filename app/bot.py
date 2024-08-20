@@ -3,6 +3,7 @@
 import logging
 import os
 import sys
+
 # Local
 from android import Device as AndroidDevice
 from image import Generator as ImageGenerator
@@ -18,6 +19,7 @@ formatter = logging.Formatter(
     fmt='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(fmt=formatter)
 logger.addHandler(hdlr=handler)
+
 # Global variables
 DEFAULT_INPUT_TXT_FILE_NAME = 'input.txt'
 DEFAULT_INPUT_TXT_FOLDER = './offers/'
@@ -37,8 +39,8 @@ class Bot:
     # --- Magic methods ---
     # __init__
     def __init__(self,
-                 input_txt_file_name:str,
                  input_txt_folder:str,
+                 input_txt_file_name:str,
                  input_txt_default_content:str,
                  valid_url_prefixes:list,
                  post_img_template_path:str,
@@ -46,18 +48,41 @@ class Bot:
                  post_img_output_folder:str,
                  ig_link_sticker_text:str,
                  ):
+        """""
+        Initialize an instance of Bot.
 
+        :param input_txt_folder: Path to input.txt folder.
+        
+        :param input_txt_file_name: input.txt file name. 
+            Defaults to "input.txt".
+        
+        :param input_txt_default_content: Default input.txt content text.
+        
+        :param valid_url_prefixes: List of valid URL prefixes (as STRs).
+        
+        :param post_img_template_path: Path to post image template file.
+        
+        :param post_img_output_folder: Path to output offer post image folder.
+
+        :param post_img_output_file_name: Output offer post image file name.
+        
+        :param ig_link_sticker_text: Instagram Stories' link sticker display 
+            text.
+
+        :returns: None.
+        """
         # Instance logger setup
         self._logger = logging.getLogger(__name__)\
                               .getChild(self.__class__.__name__)\
 
-        # Validate input.txt file name
-        if not input_txt_file_name:
-            raise ValueError('Missing input.txt file name.')
-
+            
         # Validate input.txt folder
         if not input_txt_folder:
             raise ValueError('Missing input.txt folder path.')
+        
+        # Validate input.txt file name
+        if not input_txt_file_name:
+            input_txt_file_name = 'input.txt'
 
         # Validate input.txt default content
         if not input_txt_default_content:
@@ -94,22 +119,43 @@ class Bot:
         self.post_img_output_folder = post_img_output_folder
         self.ig_link_sticker_text = ig_link_sticker_text
 
-
     # --- Public methods ---
     # Get Bot
     @classmethod
-    def get(cls,
-            input_txt_file_name:str = DEFAULT_INPUT_TXT_FILE_NAME,
+    def get(
+            cls,
             input_txt_folder:str = DEFAULT_INPUT_TXT_FOLDER,
+            input_txt_file_name:str = DEFAULT_INPUT_TXT_FILE_NAME,
             input_txt_default_content:str = DEFAULT_INPUT_TXT_TEXT,
             valid_url_prefixes:list = DEFAULT_VALID_URL_PREFIXES,
             post_img_template_path:str = DEFAULT_POST_IMG_TEMPLATE_PATH,
-            post_img_output_file_name:str = DEFAULT_POST_IMG_OUTPUT_FILE_NAME,
             post_img_output_folder:str = DEFAULT_POST_IMG_OUTPUT_FOLDER,
+            post_img_output_file_name:str = DEFAULT_POST_IMG_OUTPUT_FILE_NAME,
             ig_link_sticker_text:str = DEFAULT_IG_LINK_STICKER_TEXT
             ):
-        # TODO Add a docstring
+        """"
+        Get a Bot instance.
 
+        :param input_txt_folder: Path to input.txt folder.
+        
+        :param input_txt_file_name: input.txt file name. 
+            Defaults to "input.txt".
+        
+        :param input_txt_default_content: Default input.txt content text.
+        
+        :param valid_url_prefixes: List of valid URL prefixes (as STRs).
+        
+        :param post_img_template_path: Path to post image template file.
+        
+        :param post_img_output_folder: Path to output offer post image folder.
+
+        :param post_img_output_file_name: Output offer post image file name.
+        
+        :param ig_link_sticker_text: Instagram Stories' link sticker display 
+            text.
+
+        :returns: An instance of Bot.
+        """
         # Return Bot object
         logger.info('Getting Bot object...')
         return Bot(input_txt_file_name=input_txt_file_name,
@@ -121,10 +167,13 @@ class Bot:
                    post_img_output_folder=post_img_output_folder,
                    ig_link_sticker_text=ig_link_sticker_text)
 
+    # Run bot (by offer)
+    def run_by_offer(self):
+        """
+        Run the bot. Offers will be fully processed one by one.
 
-    # Run bot
-    def run(self):
-        # TODO Add a docstring     
+        :returns: None.
+        """
         self._logger.info('Starting bot...')
 
         # Check input.txt status, stop bot if file not found
@@ -147,16 +196,16 @@ class Bot:
                      f'Add valid urls to the file and '\
                      f'run bot again.')
 
-        # Get offer scraper object
+        # Get offer scraper instance
         self._logger.info('Creating offer scraper...')
         scraper = OfferScraper.get()
 
-        # Get image generator object
+        # Get image generator instance
         self._logger.info('Creating offer image generator...')
         generator = ImageGenerator.get(
             post_img_template=self.post_img_template_path)
 
-        # Get android device object
+        # Get android device instance
         self._logger.info('Connecting to android device...')
         device = AndroidDevice.get(device_name='device')
 
@@ -188,7 +237,6 @@ class Bot:
 
         self._logger.info('Bot run complete.')
 
-
     # --- Helper methods ---
     # Check input.txt status
     def _check_input_txt_status(
@@ -196,7 +244,21 @@ class Bot:
             create_if_not_found:bool = True,
             input_txt_default_content:str = ''
         ) -> int:
-        # TODO Add a docstring
+        """
+        Check input.txt file status.
+
+        :param create_if_not_found: If set to True, will respawn input.txt at 
+            self.input_txt_file_path if file not found.
+
+        :param input_txt_default_content: Default input.txt content (to be 
+            used when respawning file).
+
+        :returns: input.txt file status code. 
+            Possible status values are: 
+            0 for "file exists"; 
+            1 for "file not found, respawned"; and 
+            2 for "file not found, not respawned".
+        """
         # If file exists, return status 0
         if os.path.exists(self.input_txt_file_path):
             self._logger.debug(f'File "{self.input_txt_file_path}" exists. '
@@ -219,14 +281,21 @@ class Bot:
                                    f'does not exist. Return status 1.')
                 return 1
 
-
     # Create input.txt
     def _create_input_txt(
             self,
             content:str = '',
             urls:list = []
-        ) -> str:
-        # TODO Add a docstring
+        ) -> None:
+        """
+        Create input.txt file.
+
+        :param content: Initial file content.
+
+        :param urls: URLs to be added to file content.
+
+        :returns: None.
+        """
         # If urls list provided, add urls to content
         if len(urls) > 0:
             self._logger.debug(f'Adding urls to input.txt content...')
@@ -243,10 +312,13 @@ class Bot:
         # Return nothing
         return None
 
-
     # Parse input.txt
     def _parse_input_txt(self) -> list:
-        # TODO Add a docstring
+        """
+        Parse an input.txt file.
+
+        :returns: list of valid offer URLs found inside the file.
+        """
         # Read input.txt lines to memory
         with open(self.input_txt_file_path, 'r') as file:
             lines = file.readlines()
@@ -269,4 +341,3 @@ class Bot:
 
         # Return valid urls list
         return valid_urls
-
