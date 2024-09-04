@@ -13,6 +13,7 @@ def main():
 
 
 # Get fake offer
+# TODO Insert this function into Offer class
 def get_fake_offer() -> Offer:
     return Offer.get(
         url='www.google.com',
