@@ -85,12 +85,12 @@ class Scraper:
         self._logger.info('Visiting offer webpage...')
         self.driver.get(url=offer_url)
 
-        # Get offer title
-        self._logger.info('Getting offer title...')
-        offer_title = self.driver.find_element(by=By.ID, 
-                                               value='productTitle').text\
-                                 .strip()
-        self._logger.debug(f'offer_title = "{offer_title}"')
+        # Get offer name
+        self._logger.info('Getting offer name...')
+        offer_name = self.driver.find_element(by=By.ID, 
+                                              value='productTitle').text\
+                                .strip()
+        self._logger.debug(f'offer_name = "{offer_name}"')
 
         # Get offer thumbnail url
         self._logger.info('Getting offer thumbnail source url...')
@@ -158,11 +158,11 @@ class Scraper:
         # Return Offer instance
         self._logger.info('Returning Offer instance...')
         return Offer(url=offer_url,
-                     title=offer_title,
+                     name=offer_name,
                      thumbnail=offer_thumbnail,
                      price_now=offer_price_now,
                      price_before=offer_price_before,
-                     discount_rate=offer_discount_rate)
+                     discount=offer_discount_rate)
 
     # --- Helper methods ---
     # Create webdriver
