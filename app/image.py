@@ -25,7 +25,7 @@ DEFAULT_FONT_PATH = './resources/fonts/open_sans.ttf'
 DEFAULT_PRODUCT_NAME_MAX_LEN = 50
 DEFAULT_POST_IMG_TEMPLATE = './resources/templates/story-720x1280-blue.png'
 DEFAULT_OUTPUT_IMG_FOLDER = './temp/'
-DEFAULT_OUTPUT_IMG_NAME = 'image.png'
+DEFAULT_OUTPUT_IMG_NAME = 'offer-post-image.png'
 
 
 # --- The Generator class ---
@@ -175,8 +175,8 @@ class Generator:
 
         # Save offer image as PNG file
         self._logger.info('Saving post image as PNG file ...')
-        output_file_path = self._save_image_as(output_img_name,
-                                               output_img_folder)
+        output_file_path = self._save_image_as(output_img_folder,
+                                               output_img_name)
 
         # Return output file path
         return output_file_path
