@@ -18,7 +18,7 @@ from pyscreeze import Box, center
 # --- Global Configuration ---
 # Logger setup
 logger = logging.getLogger(name=__name__)
-logger.setLevel(level=logging.INFO)
+logger.setLevel(level=logging.DEBUG)
 handler = logging.FileHandler(filename='./logs/log.log', mode='a')
 formatter = logging.Formatter(
     fmt='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -163,16 +163,16 @@ class Device:
                              .getChild('get')
 
         _get_logger.info(f'Connecting to android device '\
-                         f'at {adb_server_ip}:{adb_server_port}...')
+                         f'at {adb_server_ip}:{adb_server_port} ...')
 
         # Get adb client with connection to adb server
-        _get_logger.debug(f'Connecting to ADB server '\
-                          f'at {adb_server_ip}:{adb_server_port}...')
+        _get_logger.debug(f'Connect to ADB server '\
+                          f'at {adb_server_ip}:{adb_server_port} ...')
         client = AdbClient(host=adb_server_ip, port=adb_server_port)
-        _get_logger.debug(f'Connected to ADB server.')
+        _get_logger.debug(f'Connected.')
 
         # Connect to first available adb device
-        _get_logger.debug(f'Connecting to first available android device ...')
+        _get_logger.debug(f'Connect to first available android device ...')
         try:
             device_adb = client.devices()[0]
         except IndexError:
@@ -183,12 +183,12 @@ class Device:
             sys.exit()
         else:
             device_serial = device_adb.serial
-            _get_logger.debug(f'Connected to device '\
-                              f'with serial number "{device_serial}". '\
-                              f'Named device as "{device_name}".')
+            _get_logger.debug(f'Connected to: '\
+                              f'serial="{device_serial}"; '\
+                              f'name="{device_name}".')
 
         # Get device's screen width and height as integers
-        _get_logger.debug(f"Getting device screen resolution ...")
+        _get_logger.debug(f"Get device screen resolution ...")
         screen_size = device_adb.shell('wm size')\
                                 .replace('Physical size: ', '')
         screen_width, screen_height = screen_size.split(sep='x')
@@ -211,6 +211,7 @@ class Device:
                    device_name=device_name)
 
     # Post Instagram Story
+    # TODO Improve this function
     def post_instagram_story(
             self,
             post_image:str,
@@ -247,99 +248,101 @@ class Device:
         :returns: Nothing.
         """
         # Push post image to device's sd card
-        self._logger.info(f'Pushing post image to device SD card...')
+        self._logger.info(f'Pushing post image to device SD card ...')
         post_image = self._push_image_to_sdcard(
             src_file_path=post_image,
             dest_file_name=adb_push_dest_file_name,
             dest_folder=adb_push_dest_folder)
-        self._logger.info(f'Pushed post image to device SD card.')
 
         # Launch Instagram app
-        self._logger.info('Launching Instagram app on android device...')
-        self._launch_instagram_app(2)
-        self._logger.info('Launched Instagram app.')
-
+        self._logger.info('Launching Instagram app on android device ...')
+        self._launch_instagram_app(force_restart=True,
+                                   wait_time=3)
+        
         # Click on "Add to story" button (blue circle with white cross)
-        self._logger.info('Creating new story post...')
-        sprite_box = self._find_on_screen(SPRITE_ADDTOSTORY, 
-                                          '"Add to story" button', 3, 1)
-        while sprite_box:
-            self._input_screen_tap(sprite_box, 1)
-            sprite_box = self._find_on_screen(SPRITE_ADDTOSTORY, 
-                                              '"Add to story" button', 1, 0)
-        self._logger.info('Created new story post.')
+        self._logger.info('Creating new story post ...')
+        self._find_and_click(sprite=SPRITE_ADDTOSTORY,
+                             wait_time_after_click=1,
+                             make_sure=True)
 
         # Select post image from gallery
-        self._logger.info('Selecting post image from gallery...')
-        sprite_box = self._find_on_screen(SPRITE_RECENTS, '"Recents" header')
-        self._input_screen_tap(sprite_box, 0.5, 0, 300)
-        self._logger.info('Selected post image from gallery.')
+        self._logger.info('Selecting post image from gallery ...')
+        self._find_and_click(sprite=SPRITE_RECENTS,
+                             xy_offset=[0,300],
+                             wait_time_after_click=0.5,
+                             make_sure=True)
 
         # If link sticker url provided:
         if linksticker_url:
-
+            self._logger.info('Adding link sticker ...')
+            
             # Click on "Add a sticker"
-            self._logger.info('Adding link sticker...')
-            sprite_box = self._find_on_screen(SPRITE_ADDSTICKER, 
-                                              '"Add sticker" button')
-            self._input_screen_tap(sprite_box, 0.5)
+            self._find_and_click(sprite=SPRITE_ADDSTICKER,
+                                 wait_time_after_click=0.5,
+                                 make_sure=True)
 
             # Search for link sticker
-            sprite_box = self._find_on_screen(SPRITE_SEARCHFIELD, 
-                                              '"Search" field')
-            self._input_screen_tap(sprite_box, 0.2)
+            self._find_and_click(sprite=SPRITE_SEARCHFIELD,
+                                 wait_time_after_click=0.2,
+                                 make_sure=True)
             self._input_text('link')
 
             # Select link sticker
-            sprite_box = self._find_on_screen(SPRITE_LINKSTICKER, 
-                                              '"LINK" sticker')
-            self._input_screen_tap(sprite_box, 0.1)
-
+            self._find_and_click(sprite=SPRITE_LINKSTICKER,
+                                 wait_time_after_click=0.1,
+                                 make_sure=True)
+            
             # Input link sticker url
             self._input_text(linksticker_url)
 
-            # If link sticker custom text provided, use it:
+            # If link sticker custom text provided, input it:
             if linksticker_custom_text:
-                sprite_box = self\
-                    ._find_on_screen(SPRITE_CUSTOMIZESTICKERTEXT, 
-                                     '"Customize sticker text" button')
-                self._input_screen_tap(sprite_box, 0.1)
+                self._find_and_click(sprite=SPRITE_CUSTOMIZESTICKERTEXT,
+                                     wait_time_after_click=0.1,
+                                     make_sure=True)
                 self._input_text(linksticker_custom_text)
 
             # Click on "Done"
-            sprite_box = self._find_on_screen(SPRITE_DONE, 
-                                              '"Done" button')
-            self._input_screen_tap(sprite_box, 0.5)
-
+            self._find_and_click(sprite=SPRITE_DONE,
+                                 wait_time_after_click=0.5,
+                                 make_sure=True)
+            
             # Change link sticker color
-            sprite_box = self._find_on_screen(SPRITE_LINKSTICKER_BLUE, 
-                                              'blue link sticker')
+            sprite_box = self._find_on_screen(sprite=SPRITE_LINKSTICKER_BLUE)
             for _ in range(3):
-                self._input_screen_tap(sprite_box, 0.4)
+                self._input_screen_tap(tap_box=sprite_box,
+                                       centered_tap=False,
+                                       wait_time=1)
 
             # Drag link sticker to final position (bottom, center)
-            self._input_screen_drag_and_drop(sprite_box, 0, 920, 2000, 1)
-            self._logger.info('Added link sticker.')
+            # TODO Maybe not search for this sprite for saving time?
+            sprite_box = self._find_on_screen(
+                sprite=SPRITE_LINKSTICKER_COLOURED)
+            self._input_screen_drag_and_drop(dnd_box=sprite_box,
+                                             dx=0,
+                                             dy=920,
+                                             duration=2000,
+                                             wait_time=1)
 
         # If not a test call, post story to specified public
         if not test_call:
             if close_friends_only:
-                self._logger.info('Posting story to Close Friends...')
-                sprite_box = self._find_on_screen(SPRITE_CLOSEFRIENDS, 
-                                                  '"Close Friends" button')
+                self._logger.info('Posting story to Close Friends ...')
+                self._find_and_click(sprite=SPRITE_CLOSEFRIENDS,
+                                     wait_time_after_click=1)
             else:
-                self._logger.info('Posting story to all followers...')
-                sprite_box = self._find_on_screen(SPRITE_YOURSTORY, 
-                                                  '"Your Story" button')
-            self._input_screen_tap(sprite_box, 0)
-            self._logger.info('Posted Instagram story.')
+                self._logger.info('Posting story to all followers ...')
+                self._find_and_click(sprite=SPRITE_YOURSTORY,
+                                     wait_time_after_click=1)
         else:
-            self._logger.info('This is a test, story will not be posted.')
+            self._logger.info(
+                'This is a test call, story will not be actually posted.')
 
         # Delete post image from device's sd card
-        self._logger.info('Deleting post image from device sd card...')
+        self._logger.info('Deleting post image from device sd card ...')
         self._delete_image_from_sdcard(post_image)
-        self._logger.info('Deleted post image from device sd card.')
+
+        self._logger.info('Instagram Story posted.')
 
         # Return nothing
         return None
@@ -355,81 +358,164 @@ class Device:
         :returns: Nothing.
         """
         # Delete file from device's SD card
-        self._logger.debug(f'Deleting "{file_path}"...')
+        self._logger.debug(f'Delete "{file_path}" ...')
         self.device_adb.shell(f'rm {file_path}')
-        self._logger.debug(f'Deleted "{file_path}".')
+        self._logger.debug(f'Delete done.')
 
         # Return nothing
         return None
 
-    # Find on screen
+    # Find sprite and click on it
+    def _find_and_click(
+        self,
+        sprite:str,
+        centered_click:bool = False,
+        xy_offset:list = [0,0],
+        wait_time_after_click:float = 1,
+        make_sure:bool = True,
+        max_find_attempts:int = 3,
+        time_between_find_attempts:int = 1,
+        confidence_lvl:float = 0.9
+
+    ):
+        # TODO Add a docstring.        
+        # Find sprite on screen
+        sprite_box = self._find_on_screen(
+            sprite=sprite,
+            max_attempts=max_find_attempts,
+            time_between_attempts=time_between_find_attempts,
+            confidence_lvl=confidence_lvl
+        )
+
+        # If sprite not found, raise error
+        if not sprite_box:
+            raise ValueError(f'Sprite "{sprite}" not found.')
+
+        # Click on sprite
+        self._input_screen_tap(tap_box=sprite_box,
+                               centered_tap=centered_click,
+                               xy_offset=xy_offset,
+                               wait_time=wait_time_after_click)
+
+        # If to make sure sprite was clicked:
+        while make_sure:
+
+            # Find sprite on screen (again)
+            sprite_box = self._find_on_screen(
+                sprite=sprite,
+                max_attempts=1,
+                time_between_attempts=time_between_find_attempts,
+                confidence_lvl=confidence_lvl
+            )
+
+            # If sprite gone, return zero
+            if not sprite_box:
+                return 0
+            # Else (sprite still there), click it
+            else:
+                self._input_screen_tap(tap_box=sprite_box,
+                                       centered_tap=centered_click,
+                                       xy_offset=xy_offset,
+                                       wait_time=wait_time_after_click)
+
+    # Find sprite on screen
+    # TODO Merge this function with get_sprite_box()
     def _find_on_screen(
             self,
-            search_image:str,
-            search_image_name:str = 'search_image',
-            max_attempts:int = 3,
-            time_between_attempts:int = 3,
+            sprite:str,
+            max_attempts:int = 1,
+            time_between_attempts:float = 1,
             confidence_lvl:float = 0.9
         ) -> Box|None:
         """
-        Locate an image on device screen.
+        Find a sprite on device screen.
 
-        :param search_image: File path of the image to be searched.
+        :param sprite: Path to sprite image file.
 
-        :param search_image_name: Search image name (for logging purposes 
-            only).
+        :param max_attempts: Max number of find attempts.
 
-        :param max_attempts: Max search attempts.
+        :param time_between_attempts: Wait time (in seconds) between attempts.
+        
+        :confidence_lvl: pyautogui's locate() confidence level. Default: 0.9. 
+            Range: 0.0 to 1.0.
 
-        :param time_between_attempts: Time (in seconds) between search 
-            attempts.
-
-        :confidence_lvl: pyautogui's locate() confidence level. Leave 
-            untouched if not sure.
-
-        :returns: A pyscreeze.Box object with search image location on 
-            device screen; or None, if search image not found.
+        :returns: A pyscreeze.Box object with the sprite region; or None, if 
+            sprite not found.
         """
-        # Start attempts to find search image
-        search_image_box = None
-        attempt_counter = 0
-        while True:
+        # For max_attempts times:
+        for i in range(max_attempts):
 
-            # Take device screencap
-            device_screencap = Image.open(fp=BytesIO(self._take_screencap()),
-                                          mode='r')
+            # Attempt to find sprite
+            self._logger.debug(
+                f'Find sprite "{sprite}" on device screen '\
+                f'(attempt {i+1} of {max_attempts}) ...')
+            sprite_box = self._get_sprite_box(sprite=sprite,
+                                              confidence_lvl=confidence_lvl)
 
-            # Attempt to locate search image in screencap
-            attempt_counter += 1
-            self._logger.debug(f"Locating {search_image_name} "\
-                               f"on device screen "\
-                               f"(attempt {attempt_counter} "\
-                               f"of {max_attempts})...")
-            try:
-                search_image_box = pyautogui.locate(
-                    needleImage=search_image,
-                    haystackImage=device_screencap,
-                    confidence=confidence_lvl)
-
-            # If search image not found:
-            except pyautogui.ImageNotFoundException:
-
-                # If more attempts left, wait, move to next attempt
-                if attempt_counter < max_attempts:
-                    self._logger.debug(f'Failed. Next attempt in '\
-                                       f'{time_between_attempts} seconds.')
+            # If sprite found, return sprite box
+            if sprite_box:
+                self._logger.debug(f'Sprite found. Return sprite box.')
+                return sprite_box
+            
+            # If sprite not found:
+            else:
+                # If more attempts, continue to next attempt
+                if (i+1) < max_attempts:
+                    self._logger.debug(
+                        f'Sprite not found. '\
+                        f'Next attempt in {time_between_attempts} seconds.')
                     self._sleep(time_between_attempts)
                     continue
 
-                # If no attempts left, stop, return nothing
+                # If no more attempts, return None
                 else:
-                    self._logger.debug(f'Failed. No attempts left.')
+                    self._logger.debug(f'Sprite not found. No attempts left.')
                     return None
 
-            # If search image found, return its pyscreeze.Box object
-            else:
-                self._logger.debug(f'Located image at {search_image_box}')
-                return search_image_box
+    # Get sprite box
+    # TODO Merge this function with find_on_screen()
+    def _get_sprite_box(
+            self,
+            sprite:str,
+            screencap:str|None = None,
+            confidence_lvl:float = 0.9
+        ) -> Box|None:
+        """
+        Get a sprite's Box object.
+
+        :param sprite: Path to a sprite image file.
+
+        :param screencap: Path to a screencap image file. If None, device 
+            screencap will be taken.
+
+        :confidence_lvl: pyautogui's locate() confidence level. Default: 0.9. 
+            Range: 0.0 to 1.0.
+
+        :returns: A pyscreeze.Box object with the sprite region; or None, if 
+            sprite not found.
+        """
+        # If no path to screencap, take device screencap
+        if not screencap:
+            screencap = Image.open(fp=BytesIO(self._take_screencap()),
+                                   mode='r')
+
+        # Try to locate sprite
+        try:
+            self._logger.debug(f'Get sprite box ...')
+            sprite_box = pyautogui.locate(
+                needleImage=sprite,
+                haystackImage=screencap,
+                confidence=confidence_lvl)
+
+        # If sprite not found, return None
+        except pyautogui.ImageNotFoundException:
+            self._logger.debug(f'Sprite not found. Return None.')
+            return None
+
+        # If sprite found, return sprite box
+        else:
+            self._logger.debug(f'Get sprite box done. Return box.')
+            return sprite_box
 
     # Input screen drag-and-drop
     def _input_screen_drag_and_drop(
@@ -475,16 +561,13 @@ class Device:
             y_0 = random.randint(dnd_box.top,(dnd_box.top+dnd_box.height))
 
         # Input drag and drop on device's screen
-        self._logger.debug(f'Drag-and-dropping '\
+        self._logger.debug(f'Drag-and-drop '\
                            f'from (x,y)=({x_0},{y_0}) '\
                            f'to (x,y)=({x_0+dx},{y_0+dy}) '\
-                           f'with duration={duration}...')
+                           f'with duration={duration} ...')
         self.device_adb.shell(f'input draganddrop {x_0} {y_0} '\
                               f'{x_0+dx} {y_0+dy} {duration}')
-        self._logger.debug(f'Drag-and-dropped '\
-                           f'from (x,y)=({x_0},{y_0}) '\
-                           f'to (x,y)=({x_0+dx},{y_0+dy}) '\
-                           f'with duration={duration}.')
+        self._logger.debug(f'Drag-and-drop done.')
 
         # Wait some time (for convenience)
         self._sleep(wait_time)
@@ -497,7 +580,7 @@ class Device:
             self,
             tap_box:Box,
             centered_tap:bool = False,
-            xy_offset:tuple = (0, 0),
+            xy_offset:list = [0, 0],
             wait_time:float = 1,
         ) -> None:
         """
@@ -510,7 +593,7 @@ class Device:
             center pixel. If set to False, tap will happen at a random pixel 
             inside tap box area.
 
-        :param xy_offset: A tuple of ints containing offset values for X and Y 
+        :param xy_offset: A list of ints containing offset values for X and Y 
             axes. Useful for tapping an area external but relative to the tap 
             box.
 
@@ -530,9 +613,9 @@ class Device:
                 + xy_offset[1]
 
         # Input tap on device's screen
-        self._logger.debug(f'Tapping on (x,y)=({x},{y})...')
+        self._logger.debug(f'Tap on (x,y)=({x},{y}) ...')
         self.device_adb.shell(f'input tap {x} {y}')
-        self._logger.debug(f'Tapped on (x,y)=({x},{y}).')
+        self._logger.debug(f'Tap done.')
 
         # Wait some time (for convenience)
         self._sleep(wait_time)
@@ -550,9 +633,9 @@ class Device:
         :returns: None.
         """
         # Input text
-        self._logger.debug(f'Inputting "{text}"...')
+        self._logger.debug(f'Input "{text}" ...')
         self.device_adb.input_text(text)
-        self._logger.debug(f'Inputted "{text}".')
+        self._logger.debug(f'Input done.')
 
         # Return nothing
         return None
@@ -575,14 +658,14 @@ class Device:
         """
         # Force-stop Instagram app if required
         if force_restart==True:
-            self._logger.debug('Force-stopping Instagram app...')
+            self._logger.debug('Force-stop Instagram app ...')
             self.device_adb.shell('am force-stop com.instagram.android')
-            self._logger.debug('Force-stopped Instagram app.')
+            self._logger.debug('Force-stop done.')
 
         # Launch Instagram app
-        self._logger.debug('Launching Instagram app...')
+        self._logger.debug('Launch Instagram app ...')
         self.device_adb.shell('monkey -p com.instagram.android 1')
-        self._logger.debug('Launched Instagram app.')
+        self._logger.debug('Launch done.')
 
         # Wait some time (for convenience)
         self._sleep(wait_time)
@@ -616,20 +699,18 @@ class Device:
         dest_file_path = f'{dest_folder}{dest_file_name}'
 
         # Push file from host machine to android device
-        self._logger.debug(f'Pushing file "{src_file_path}" '\
-                           f'to "{dest_file_path}"...')
+        self._logger.debug(f'Push file "{src_file_path}" '\
+                           f'to "{dest_file_path}" ...')
         self.device_adb.push(src=src_file_path, dest=dest_file_path)
-        self._logger.debug(f'Pushed file "{src_file_path}" '\
-                           f'to "{dest_file_path}".')
+        self._logger.debug(f'Push done.')
 
         # Make Android device "recognize" JPG file as a media file
-        self._logger.debug(f'Scanning file "{dest_file_path}" '\
-                           f'with media scanner...')
+        self._logger.debug(f'Scan file "{dest_file_path}" '\
+                           f'with media scanner ...')
         self.device_adb.shell(f'am broadcast -a '\
                               f'android.intent.action.MEDIA_SCANNER_SCAN_FILE'\
                               f' -d file://{dest_file_path}')
-        self._logger.debug(f'Scanned file "{dest_file_path}" '
-                           f'with media scanner.')
+        self._logger.debug(f'Scan done.')
 
         # If requested, delete source file
         if delete_src:
@@ -648,9 +729,9 @@ class Device:
         :returns: None.
         """
         # Sleep for some time
-        self._logger.debug(f'Sleeping for {wait_time} seconds...')
+        self._logger.debug(f'Sleep for {wait_time} seconds ...')
         sleep(wait_time)
-        self._logger.debug(f'Slept for {wait_time} seconds.')
+        self._logger.debug(f'Sleep done.')
 
         # Return nothing
         return None
@@ -666,16 +747,16 @@ class Device:
         :returns: Screencap as a bytearray object.
         """
         # Take device screencap
-        self._logger.debug('Taking device screencap...')
+        self._logger.debug('Take screencap of device screen ...')
         screencap = self.device_adb.screencap()
-        self._logger.debug('Took device screencap.')
+        self._logger.debug('Take screencap done.')
 
         # If specified output path, save screencap to it
         if output_path:
-            self._logger.debug(f'Saving screencap to "{output_path}"...')
+            self._logger.debug(f'Save screencap to "{output_path}" ...')
             with open(output_path, 'wb') as file:
                 file.write(screencap)
-            self._logger.debug(f'Saved screencap to "{output_path}".')
+            self._logger.debug(f'Save screencap done.')
 
         # Return screencap as bytearray
         return screencap
