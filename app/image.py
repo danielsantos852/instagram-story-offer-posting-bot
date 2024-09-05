@@ -106,6 +106,7 @@ class Generator:
                     has_transparency=True)
 
         # Add product name to post image
+        # TODO Some product names extrapolate price "boom" image area.
         self._logger.info('Adding product name to post image ...')
         self._insert_textbox(anchor='ma',
                              x=720/2,
@@ -133,6 +134,7 @@ class Generator:
         if offer.price_before and offer.discount:
 
             # "-00%"
+            # TODO Make discount be ancored/aligned to the right.
             self._insert_textbox(x=132,
                                  y=850,
                                  text=f'-{offer.get_discount(True)}',
@@ -166,6 +168,7 @@ class Generator:
         
         else:
             # "R$0000,00"
+            # TODO Make it bigger and better aligned.
             self._insert_textbox(anchor='ma',
                                  x=720/2,
                                  y=858,
@@ -292,7 +295,7 @@ class Generator:
         return None
 
     # Paste image into current image
-    # FIXME Make this method resize images while keeping aspect ratio
+    # FIXME Make this method resize images while keeping aspect ratio.
     def _paste(
             self, 
             src:str,
@@ -302,7 +305,7 @@ class Generator:
             heigth:int,
             has_transparency:bool = False
         ) -> None:
-        # TODO Improve this docstring
+        # TODO Improve this docstring.
         """
         Paste an image to current image.
 
