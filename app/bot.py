@@ -21,16 +21,16 @@ handler.setFormatter(fmt=formatter)
 logger.addHandler(hdlr=handler)
 
 # Global variables
-DEFAULT_INPUT_TXT_FILE_NAME = 'input.txt'
 DEFAULT_INPUT_TXT_FOLDER = './offers/'
-DEFAULT_INPUT_TXT_TEXT = 'Paste a single offer url per line. '\
-                         'No more, no less.\n'
+DEFAULT_INPUT_TXT_FILE_NAME = 'input.txt'
+DEFAULT_INPUT_TXT_CONTENT = 'Paste a single offer url per line. '\
+                            'No more, no less.\n'
 DEFAULT_VALID_URL_PREFIXES = ['https://amzn.to/', 
                               'https://www.amazon.com.br/']
 DEFAULT_POST_IMG_TEMPLATE_PATH = './resources/templates/'\
                                  'offer-post-720x1280.png'
-DEFAULT_POST_IMG_OUTPUT_FILE_NAME = 'post-image.png'
 DEFAULT_POST_IMG_OUTPUT_FOLDER = './temp/'
+DEFAULT_POST_IMG_OUTPUT_FILE_NAME = 'post-image.png'
 DEFAULT_IG_LINK_STICKER_TEXT = 'ver oferta'
 
 
@@ -126,7 +126,7 @@ class Bot:
             cls,
             input_txt_folder:str = DEFAULT_INPUT_TXT_FOLDER,
             input_txt_file_name:str = DEFAULT_INPUT_TXT_FILE_NAME,
-            input_txt_default_content:str = DEFAULT_INPUT_TXT_TEXT,
+            input_txt_default_content:str = DEFAULT_INPUT_TXT_CONTENT,
             valid_url_prefixes:list = DEFAULT_VALID_URL_PREFIXES,
             post_img_template_path:str = DEFAULT_POST_IMG_TEMPLATE_PATH,
             post_img_output_folder:str = DEFAULT_POST_IMG_OUTPUT_FOLDER,
@@ -168,143 +168,135 @@ class Bot:
                    ig_link_sticker_text=ig_link_sticker_text)
 
     # Run bot (by offer)
-    def run_by_offer(self):
+    def run_by_offer(self,
+                     test_call:bool = False):
         """
-        Run the bot. Offers will be fully processed one by one.
+        Run the bot. Offers will be scraped-generated-posted one by one.
 
         :returns: None.
         """
-        self._logger.info('Starting bot...')
-
-        # Check input.txt status, stop bot if file not found
-        self._logger.info(f'Checking input.txt status...')
-        status = self._check_input_txt_status(
-            create_if_not_found=True,
-            input_txt_default_content=DEFAULT_INPUT_TXT_TEXT)
-        if status == 1:
-            sys.exit(f'File "{self.input_txt_file_path}" not found. '\
-                     f'Create file and run bot again. Stopping...')
-
-        # Parse input.txt
-        self._logger.info(f'Parsing input.txt...')
-        offer_urls = self._parse_input_txt()
-
-        # If no valid urls parsed, stop bot
-        if len(offer_urls) == 0:
-            sys.exit(f'File "{self.input_txt_file_path}" '\
-                     f'has no valid urls for parsing. '\
-                     f'Add valid urls to the file and '\
-                     f'run bot again.')
+        self._logger.info('BOT RUN START.')
 
         # Get offer scraper instance
-        self._logger.info('Creating offer scraper...')
+        self._logger.info('Loading offer url scraper ...')
         scraper = OfferScraper.get()
 
         # Get image generator instance
-        self._logger.info('Creating offer image generator...')
+        self._logger.info('Loading offer post image generator ...')
         generator = ImageGenerator.get(
             post_img_template=self.post_img_template_path)
 
         # Get android device instance
-        self._logger.info('Connecting to android device...')
+        self._logger.info('Connecting to Android device ...')
         device = AndroidDevice.get(device_name='device')
 
-        # Do this (len(offer_urls)+1) times
-        for i in range(len(offer_urls)):
+        # Check input.txt
+        self._logger.info(f'Checking input.txt ...')
+        self._check_input_txt(default_content=DEFAULT_INPUT_TXT_CONTENT)
 
-            # Scrape first url on offer urls list
+        # Parse input.txt
+        self._logger.info(f'Parsing input.txt ...')
+        offer_urls = self._parse_input_txt()
+
+        # If no valid urls parsed, stop bot run
+        if len(offer_urls) == 0:
+            sys.exit(f'File "{self.input_txt_file_path}" has no valid urls. '\
+                     f'Add valid urls to file and run bot again.')
+
+        # Do this len(offer_urls) times:
+        len_offer_urls = len(offer_urls)
+        for i in range(len_offer_urls):
+            self._logger.info(f'Processing offer # {i+1} of {len_offer_urls} '\
+                              f'...')
+
+            # Scrape offer data from first offer url of offer urls list
             offer = scraper.scrape_amazon_offer(offer_urls[0])
 
-            # Create Instagram post image
+            # Create offer post image file from offer data
+            output_img_name = f'{i}-{offer.name.split(' ',1)[0]}.png'
             post_img = generator.create_offer_post_image(
                 offer=offer,
                 output_img_folder=self.post_img_output_folder,
-                output_img_name=self.post_img_output_file_name)
+                output_img_name=output_img_name)
 
-            # Post Instagram story
+            # Post offer image (with url sticker) as an Instagram story
             device.post_instagram_story(
                 post_image=post_img,
                 linksticker_url=offer.url,
                 linksticker_custom_text=self.ig_link_sticker_text,
-                close_friends_only=True)
+                close_friends_only=True,
+                test_call=True if test_call else False)
 
-            # Remove first url from offer urls list
+            # Remove first offer url from offer urls list
             offer_urls.pop(0)
 
             # Re-create input.txt
-            self._create_input_txt(content=self.input_txt_default_content,
-                                   urls=offer_urls)
+            self._create_input_txt(
+                default_content=self.input_txt_default_content,
+                urls=offer_urls)
 
-        self._logger.info('Bot run complete.')
+        self._logger.info('BOT RUN FINISH.')
 
     # --- Helper methods ---
-    # Check input.txt status
-    def _check_input_txt_status(
+    # Check input.txt file
+    def _check_input_txt(
             self,
-            create_if_not_found:bool = True,
-            input_txt_default_content:str = ''
+            default_content:str
         ) -> int:
         """
-        Check input.txt file status.
+        Check input.txt file at self.input_txt_file_path.
 
-        :param create_if_not_found: If set to True, will respawn input.txt at 
-            self.input_txt_file_path if file not found.
-
-        :param input_txt_default_content: Default input.txt content (to be 
-            used when respawning file).
+        :param default_content: String of text that will be written into any 
+            new input.txt file.
 
         :returns: input.txt file status code. 
             Possible status values are: 
-            0 for "file exists"; 
-            1 for "file not found, respawned"; and 
-            2 for "file not found, not respawned".
+            0 for "file exists"; and
+            1 for "file not found, created".
         """
         # If file exists, return status 0
         if os.path.exists(self.input_txt_file_path):
             self._logger.debug(f'File "{self.input_txt_file_path}" exists. '
                                f'Return status 0.')
             return 0
-        # If absent file:
+        # If file not found, create it, return status 1
         else:
-            # If create_if_not_found, create file, return status 0
-            if create_if_not_found:
-                self._logger.debug(f'File "{self.input_txt_file_path}" '\
-                                   f'does not exist. Creating...')
-                self._create_input_txt(content=input_txt_default_content)
-                self._logger.debug(f'Created file '\
-                                   f'"{self.input_txt_file_path}". '\
-                                   f'Return status 0.')
-                return 0
-            # Else, return status 1
-            else:
-                self._logger.debug(f'File "{self.input_txt_file_path}" '\
-                                   f'does not exist. Return status 1.')
-                return 1
+            self._logger.debug(f'File "{self.input_txt_file_path}" '\
+                               f'not found. Creating file ...')
+            self._create_input_txt(default_content)
+            self._logger.debug(f'Created file '\
+                               f'"{self.input_txt_file_path}". '\
+                               f'Return status 1.')
+            return 1
 
     # Create input.txt
     def _create_input_txt(
             self,
-            content:str = '',
+            default_content:str = '',
             urls:list = []
         ) -> None:
         """
         Create input.txt file.
 
-        :param content: Initial file content.
+        :param default_content: Default input.txt content. Used when creating 
+            a new input.txt file.
 
-        :param urls: URLs to be added to file content.
+        :param urls: URLs to be added to content.
 
         :returns: None.
         """
+        # Start file content with default content
+        content = default_content
+
         # If urls list provided, add urls to content
         if len(urls) > 0:
-            self._logger.debug(f'Adding urls to input.txt content...')
+            self._logger.debug(f'Adding urls to input.txt ...')
             for url in urls:
                 content = f'{content}{url}\n'
             self._logger.debug(f'Added urls.')
 
-        # Create text file and write content
-        self._logger.debug(f'Creating "{self.input_txt_file_path}"...')
+        # Create input.txt, write content into file
+        self._logger.debug(f'Creating "{self.input_txt_file_path}" ...')
         with open(self.input_txt_file_path, 'w') as file:
             file.write(content)
         self._logger.debug(f'Created file.')
@@ -320,10 +312,12 @@ class Bot:
         :returns: list of valid offer URLs found inside the file.
         """
         # Read input.txt lines to memory
+        self._logger.debug(f'Parsing file "{self.input_txt_file_path}" ...')
         with open(self.input_txt_file_path, 'r') as file:
             lines = file.readlines()
 
         # Check each line for a valid url prefix, if found, save line
+        # TODO (Someday) Improve valid url checking.
         valid_lines = []
         for line in lines:
             for valid_url_prefix in self.valid_url_prefixes:
