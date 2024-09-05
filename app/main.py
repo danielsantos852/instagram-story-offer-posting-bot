@@ -10,7 +10,7 @@ def main():
     bot = Bot.get()
 
     # Run bot (by offer)
-    bot.run_by_offer()
+    bot.run_by_offer(test_call=False)
 
 
 # Call main()
