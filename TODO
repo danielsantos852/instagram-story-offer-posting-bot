@@ -1,2 +1,3 @@
 - TODO Improve navigation on Android device
 - TODO Create a crawler for amazon.com.br
+- TODO Have two log files created: one on INFO, one on DEBUG.
